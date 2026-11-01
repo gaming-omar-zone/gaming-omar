@@ -3,8 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Gaming Omar | تحميل ألعاب الأندرويد ومودات GTA SA</title>
   
+  <!-- تحسين محركات البحث SEO -->
+  <title>Gaming Omar | تحميل ألعاب أندرويد مهكرة ومودات GTA SA الأصلية</title>
+  <meta name="description" content="موقع Gaming Omar هو بوابتك الأولى لتحميل أحدث ألعاب الأندرويد المهكرة (Mod APK) والأوفلاين، وأقوى مودات GTA San Andreas Android بروابط مباشرة.">
+  <meta name="keywords" content="العاب اندرويد, مودات gta sa للاندرويد, apk مهكر, gta san andreas mods android, العاب بدون نت">
+  <meta property="og:title" content="Gaming Omar | ألعاب أندرويد ومودات GTA SA">
+  <meta property="og:description" content="حمل أحدث ألعاب الأندرويد ومودات GTA San Andreas بروابط مباشرة وسريعة.">
+  <meta property="og:type" content="website">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -14,6 +21,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
+  <!-- زر التيليجرام العائم -->
+  <a href="https://t.me/" target="_blank" class="floating-community-btn" title="انضم لقناتنا على التيليجرام">
+    <i class="fa-brands fa-telegram"></i>
+  </a>
 
   <!-- شريط التنقل العلوي -->
   <header class="navbar">
@@ -39,7 +51,7 @@
 
   <!-- الصفحة الرئيسية -->
   <main id="viewHome">
-    <!-- Hero Section -->
+    <!-- البانر الترحيبي -->
     <section class="hero-section">
       <div class="hero-content">
         <span class="hero-badge" id="heroBadge"><i class="fa-brands fa-android"></i> ألعاب أندرويد + مودات GTA SA</span>
@@ -47,32 +59,42 @@
         <p class="hero-desc" id="heroSubtitle">وجهتك الأولى لتحميل أحدث ألعاب الأندرويد المهكرة والكاملة، بالإضافة إلى أقوى مودات وتعديلات GTA San Andreas بروابط مباشرة وسريعة.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" onclick="switchView('mods')">
-            <i class="fa-solid fa-download"></i> تصفح وتحميل الألعاب والمودات
+            <i class="fa-solid fa-download"></i> تصفح وتحميل الآن
           </button>
-          <button class="btn btn-secondary" onclick="switchView('about')">
-            <i class="fa-solid fa-shield-halved"></i> سياسة الأمان والملفات
+          <button class="btn btn-secondary" onclick="showFavoritesOnly()">
+            <i class="fa-solid fa-heart" style="color:#ff4757;"></i> ألعابي المفضلة (<span id="favCount">0</span>)
           </button>
         </div>
       </div>
     </section>
 
+    <!-- مساحة إعلانية علوية جاهزة -->
+    <div class="container">
+      <div class="ad-slot">
+        <i class="fa-solid fa-rectangle-ad"></i> مساحة إعلانية - يمكنك وضع شفرة AdSense أو أي شركة إعلانية هنا
+      </div>
+    </div>
+
     <!-- قسم الألعاب والمودات والبحث -->
     <section class="container mods-section" id="mods">
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-cubes highlight"></i> مكتبة الألعاب والتعديلات</h2>
-        <p class="section-subtitle">اختر تصنيف اللعبة أو المود المفضل لديك أو استخدم محرك البحث المباشر</p>
+        <p class="section-subtitle">اختر التصنيف المفضل لديك أو استخدم محرك البحث المباشر</p>
       </div>
 
-      <!-- البحث -->
+      <!-- محرك البحث -->
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
         <input type="text" id="searchInput" placeholder="ابحث باسم اللعبة، ملف APK، نوع السيارة أو المود...">
       </div>
 
-      <!-- فلترة الفئات الحية -->
+      <!-- أزرار التصنيفات + زر المفضلة -->
       <div class="categories-filter" id="categoriesBar">
         <button class="filter-btn active" data-category="all">
-          <i class="fa-solid fa-border-all"></i> كل الألعاب والمودات
+          <i class="fa-solid fa-border-all"></i> الكل
+        </button>
+        <button class="filter-btn fav-btn" id="favFilterBtn" onclick="toggleFavoritesFilter()">
+          <i class="fa-solid fa-heart"></i> المفضلة
         </button>
       </div>
 
@@ -108,7 +130,6 @@
   <!-- صفحة اتصل بنا -->
   <section id="viewContact" class="container page-card" style="display: none; margin: 40px auto;">
     <h2 class="section-title"><i class="fa-solid fa-envelope highlight"></i> اتصل بنا</h2>
-    <p style="color: var(--text-gray); margin-bottom: 15px;">هل تطلب لعبة معينة أو واجهت مشكلة في التثبيت؟ راسلنا الآن</p>
     <form class="contact-form" onsubmit="handlePublicContact(event)">
       <div class="form-group">
         <label>الاسم</label>
@@ -125,47 +146,128 @@
       <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
     </form>
     <div id="contactSuccess" class="alert-success" style="display: none; margin-top: 15px;">
-      تم استلام طلبك بنجاح! سنقوم بمراجعته والرد عليك قريباً.
+      تم استلام رسالتك بنجاح! سنقوم بمراجعتها والرد عليك قريباً.
     </div>
   </section>
 
-  <!-- نافذة التفاصيل والتحميل المنبثقة -->
+  <!-- نافذة التفاصيل والتحميل المنبثقة الشاملة -->
   <div class="modal-backdrop" id="modModal" onclick="handleBackdropClick(event)">
     <div class="modal-dialog">
       <button class="modal-close" onclick="closeModal()">&times;</button>
       
       <div class="modal-header">
-        <span class="card-badge" id="modalBadge" style="position: static;">التصنيف</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <span class="card-badge" id="modalBadge" style="position: static;">التصنيف</span>
+          <span class="tag-badge" id="modalModeTag">أوفلاين</span>
+        </div>
         <h2 id="modalTitle" style="margin-top: 8px;">اسم اللعبة / المود</h2>
       </div>
 
       <div class="modal-body">
-        <img id="modalImg" src="" alt="صورة المعاينة" class="modal-img">
+        <!-- مشغل فيديو يوتيوب أو صورة المعاينة -->
+        <div id="modalMediaContainer">
+          <img id="modalImg" src="" alt="صورة المعاينة" class="modal-img">
+        </div>
 
+        <!-- نظام تقييم النجوم التفاعلي -->
+        <div class="rating-section">
+          <div>
+            <strong>التقييم: </strong>
+            <span id="modalRatingScore" style="color:var(--star-gold); font-weight:bold;">5.0</span> / 5 
+            <small style="color:var(--text-gray);">(<span id="modalRatingVotes">0</span> تقييم)</small>
+          </div>
+          <div class="stars-interactive" id="starsRatingBox">
+            <i class="fa-solid fa-star" data-val="1"></i>
+            <i class="fa-solid fa-star" data-val="2"></i>
+            <i class="fa-solid fa-star" data-val="3"></i>
+            <i class="fa-solid fa-star" data-val="4"></i>
+            <i class="fa-solid fa-star" data-val="5"></i>
+          </div>
+        </div>
+
+        <!-- جدول المواصفات الفنية ومتطلبات التشغيل -->
         <div class="specs-grid">
           <div class="spec-card">
             <span class="spec-title"><i class="fa-solid fa-file-zipper highlight"></i> الحجم</span>
             <span class="spec-val" id="modalSize">0 MB</span>
           </div>
           <div class="spec-card">
-            <span class="spec-title"><i class="fa-brands fa-android highlight"></i> التوافق / الإصدار</span>
+            <span class="spec-title"><i class="fa-brands fa-android highlight"></i> النظام</span>
             <span class="spec-val" id="modalVersion">Android 5.0+</span>
           </div>
           <div class="spec-card">
-            <span class="spec-title"><i class="fa-solid fa-download highlight"></i> التحميلات</span>
+            <span class="spec-title"><i class="fa-solid fa-memory highlight"></i> الرام الأدنى</span>
+            <span class="spec-val" id="modalRam">2 GB</span>
+          </div>
+          <div class="spec-card">
+            <span class="spec-title"><i class="fa-solid fa-microchip highlight"></i> المعالج</span>
+            <span class="spec-val" id="modalGpu">Mali/Adreno</span>
+          </div>
+          <div class="spec-card">
+            <span class="spec-title"><i class="fa-solid fa-download highlight"></i> التنزيلات</span>
             <span class="spec-val" id="modalDownloads">0</span>
+          </div>
+          <div class="spec-card">
+            <span class="spec-title"><i class="fa-solid fa-wifi highlight"></i> وضع اللعب</span>
+            <span class="spec-val" id="modalModeVal">أوفلاين</span>
           </div>
         </div>
 
-        <div style="margin-bottom: 20px;">
+        <!-- الوصف وطريقة التركيب -->
+        <div style="margin-bottom: 16px;">
           <h4 style="margin-bottom: 6px;"><i class="fa-solid fa-align-right highlight"></i> الوصف ومميزات الملف:</h4>
           <p id="modalDesc" style="color: var(--text-gray); white-space: pre-line;"></p>
         </div>
 
-        <button id="modalDownloadBtn" class="btn btn-download-big" onclick="triggerDownload()">
-          <i class="fa-solid fa-circle-down"></i> بدء تحميل الملف برابط مباشر
-        </button>
-        <small class="secure-tag"><i class="fa-solid fa-lock"></i> تم فحص الملف وهو آمن 100% وخالٍ من الفيروسات</small>
+        <!-- العداد التنازلي قبل فتح الروابط -->
+        <div class="timer-container" id="timerContainer">
+          <i class="fa-solid fa-hourglass-half fa-spin highlight"></i>
+          <p>جاري تجهيز روابط التحميل الآمنة والمباشرة...</p>
+          <div class="timer-circle" id="timerCount">7</div>
+          <small style="color:var(--text-gray);">يرجى الانتظار ثوانٍ معدودة</small>
+        </div>
+
+        <!-- زر بدء التحميل والروابط البديلة -->
+        <div id="downloadActionBox">
+          <button id="modalStartDownloadBtn" class="btn btn-download-big" onclick="startDownloadProcess()">
+            <i class="fa-solid fa-cloud-arrow-down"></i> اضغط هنا لتحميل اللعبة
+          </button>
+
+          <!-- الروابط المتعددة تظهر بعد انتهاء العداد -->
+          <div class="mirrors-group" id="mirrorsGroup" style="display: none;">
+            <a href="#" id="primaryDownloadLink" target="_blank" class="btn-mirror">
+              <span><i class="fa-solid fa-download highlight"></i> رابط التحميل الأساسي (سيرفر مباشر)</span>
+              <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <a href="#" id="driveDownloadLink" target="_blank" class="btn-mirror" style="display: none;">
+              <span><i class="fa-brands fa-google-drive highlight"></i> سيرفر بديل (Google Drive)</span>
+              <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <a href="#" id="megaDownloadLink" target="_blank" class="btn-mirror" style="display: none;">
+              <span><i class="fa-solid fa-server highlight"></i> سيرفر بديل (Mega)</span>
+              <i class="fa-solid fa-arrow-left"></i>
+            </a>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+          <small class="secure-tag"><i class="fa-solid fa-shield-check"></i> ملف آمن ومفحوص 100%</small>
+          <button class="report-link-btn" onclick="reportCurrentMod()">
+            <i class="fa-solid fa-triangle-exclamation"></i> إبلاغ عن رابط لا يعمل
+          </button>
+        </div>
+
+        <!-- صندوق التعليقات -->
+        <div class="comments-box">
+          <h4><i class="fa-solid fa-comments highlight"></i> تعليقات اللاعبين (<span id="commentsCount">0</span>)</h4>
+          <div class="comments-list" id="commentsList"></div>
+          
+          <form onsubmit="handlePostComment(event)" style="display: flex; gap: 8px; margin-top: 10px;">
+            <input type="text" id="commentAuthor" required placeholder="اسمك" style="width: 30%;">
+            <input type="text" id="commentText" required placeholder="اكتب رأيك في اللعبة..." style="flex-grow: 1;">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-paper-plane"></i></button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -178,14 +280,14 @@
           <i class="fa-solid fa-gamepad logo-icon"></i>
           <span>Gaming <span class="highlight">Omar</span></span>
         </div>
-        <p>موقعك الأول والموثوق لتحميل ألعاب الأندرويد المهكرة ومودات GTA SA الأصلية بروابط مباشرة.</p>
+        <p>موقعك الموثوق لتحميل أحدث ألعاب الأندرويد المهكرة ومودات GTA SA الأصلية بروابط مباشرة.</p>
       </div>
       <div class="footer-links">
         <h4>الأقسام الرئيسية</h4>
         <ul id="footerCats"></ul>
       </div>
       <div class="footer-social">
-        <h4>تابعنا</h4>
+        <h4>مجتمع Gaming Omar</h4>
         <div class="social-icons">
           <a href="#"><i class="fa-brands fa-youtube"></i></a>
           <a href="#"><i class="fa-brands fa-telegram"></i></a>

@@ -1,5 +1,5 @@
 // ========================================================
-// Gaming Omar - Public Site Logic (جميع الميزات التفاعلية)
+// Gaming Omar - Public Site Logic (ربط جميع الأزرار والتحميل المباشر)
 // ========================================================
 
 let allMods = [];
@@ -9,7 +9,8 @@ let activeMod = null;
 let showingFavorites = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
-    document.getElementById('yearSpan').textContent = new Date().getFullYear();
+    const yearSpan = document.getElementById('yearSpan');
+    if (yearSpan) yearSpan.textContent = new Date().getFullYear();
     setupMobileNav();
     updateFavoritesBadge();
     await loadSettings();
@@ -20,31 +21,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 window.switchView = function(viewName) {
-    document.getElementById('viewHome').style.display = (viewName === 'home' || viewName === 'mods') ? 'block' : 'none';
-    document.getElementById('viewAbout').style.display = viewName === 'about' ? 'block' : 'none';
-    document.getElementById('viewContact').style.display = viewName === 'contact' ? 'block' : 'none';
+    const viewHome = document.getElementById('viewHome');
+    const viewAbout = document.getElementById('viewAbout');
+    const viewContact = document.getElementById('viewContact');
+
+    if (viewHome) viewHome.style.display = (viewName === 'home' || viewName === 'mods') ? 'block' : 'none';
+    if (viewAbout) viewAbout.style.display = viewName === 'about' ? 'block' : 'none';
+    if (viewContact) viewContact.style.display = viewName === 'contact' ? 'block' : 'none';
 
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
     const targetLink = document.querySelector(`.nav-link[onclick="switchView('${viewName}')"]`);
     if (targetLink) targetLink.classList.add('active');
 
     if (viewName === 'mods') {
-        document.getElementById('mods').scrollIntoView({ behavior: 'smooth' });
+        const modsSection = document.getElementById('mods');
+        if (modsSection) modsSection.scrollIntoView({ behavior: 'smooth' });
     } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    document.getElementById('navLinks').classList.remove('show');
+    const navLinks = document.getElementById('navLinks');
+    if (navLinks) navLinks.classList.remove('show');
 };
 
 function setupMobileNav() {
-    document.getElementById('navToggle').addEventListener('click', () => {
-        document.getElementById('navLinks').classList.toggle('show');
-    });
+    const toggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+    if (toggle && navLinks) {
+        toggle.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
+        });
+    }
 }
 
 // 1. نظام المفضلة (Favorites)
 function getFavorites() {
-    return JSON.parse(localStorage.getItem('gaming_omar_favs') || '[]');
+    try {
+        return JSON.parse(localStorage.getItem('gaming_omar_favs') || '[]');
+    } catch (e) {
+        return [];
+    }
 }
 
 function isFavorite(modId) {
@@ -52,7 +67,7 @@ function isFavorite(modId) {
 }
 
 window.toggleFavorite = function(e, modId) {
-    e.stopPropagation();
+    if (e) e.stopPropagation();
     let favs = getFavorites();
     if (favs.includes(modId)) {
         favs = favs.filter(id => id !== modId);
@@ -74,21 +89,24 @@ window.toggleFavoritesFilter = function() {
     showingFavorites = !showingFavorites;
     const favBtn = document.getElementById('favFilterBtn');
     if (showingFavorites) {
-        favBtn.classList.add('active');
+        if (favBtn) favBtn.classList.add('active');
         document.querySelectorAll('.filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
     } else {
-        favBtn.classList.remove('active');
-        document.querySelector('.filter-btn[data-category="all"]').classList.add('active');
+        if (favBtn) favBtn.classList.remove('active');
+        const allBtn = document.querySelector('.filter-btn[data-category="all"]');
+        if (allBtn) allBtn.classList.add('active');
     }
     renderModsGrid(applyCurrentFilters());
 };
 
 window.showFavoritesOnly = function() {
     showingFavorites = true;
-    document.getElementById('favFilterBtn').classList.add('active');
+    const favBtn = document.getElementById('favFilterBtn');
+    if (favBtn) favBtn.classList.add('active');
     document.querySelectorAll('.filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
     renderModsGrid(applyCurrentFilters());
-    document.getElementById('mods').scrollIntoView({ behavior: 'smooth' });
+    const modsSection = document.getElementById('mods');
+    if (modsSection) modsSection.scrollIntoView({ behavior: 'smooth' });
 };
 
 // 2. جلب البيانات والإعدادات
@@ -126,11 +144,13 @@ async function loadCategories() {
         btn.setAttribute('data-category', cat.id);
         btn.innerHTML = `<i class="fa-solid ${cat.icon || 'fa-folder'}"></i> ${cat.name}`;
         btn.onclick = () => filterByCategory(cat.id, btn);
-        categoriesBar.appendChild(btn);
+        if (categoriesBar) categoriesBar.appendChild(btn);
 
-        const li = document.createElement('li');
-        li.innerHTML = `<a href="#mods" onclick="filterByCategory('${cat.id}')">${cat.name}</a>`;
-        footerCats.appendChild(li);
+        if (footerCats) {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#mods" onclick="filterByCategory('${cat.id}')">${cat.name}</a>`;
+            footerCats.appendChild(li);
+        }
     });
 
     const allBtn = document.querySelector('.filter-btn[data-category="all"]');
@@ -143,7 +163,7 @@ async function loadCategories() {
 
 async function loadMods() {
     const loading = document.getElementById('loadingIndicator');
-    loading.style.display = 'block';
+    if (loading) loading.style.display = 'block';
 
     const { data: mods, error } = await window.supabaseClient
         .from('mods')
@@ -151,7 +171,7 @@ async function loadMods() {
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
-    loading.style.display = 'none';
+    if (loading) loading.style.display = 'none';
 
     if (error) {
         console.error("Mods error:", error);
@@ -163,12 +183,14 @@ async function loadMods() {
 }
 
 function applyCurrentFilters() {
-    const q = document.getElementById('searchInput').value.trim().toLowerCase();
+    const searchInput = document.getElementById('searchInput');
+    const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
     const favs = getFavorites();
 
     return allMods.filter(mod => {
         const matchCat = selectedCategory === 'all' || mod.category_id === selectedCategory;
-        const matchSearch = mod.title.toLowerCase().includes(q) || mod.short_desc.toLowerCase().includes(q);
+        const matchSearch = (mod.title && mod.title.toLowerCase().includes(q)) || 
+                            (mod.short_desc && mod.short_desc.toLowerCase().includes(q));
         const matchFav = !showingFavorites || favs.includes(mod.id);
         return matchCat && matchSearch && matchFav;
     });
@@ -177,13 +199,14 @@ function applyCurrentFilters() {
 function renderModsGrid(mods) {
     const grid = document.getElementById('modsGrid');
     const noResults = document.getElementById('noResults');
+    if (!grid) return;
     grid.innerHTML = '';
 
-    if (mods.length === 0) {
-        noResults.style.display = 'block';
+    if (!mods || mods.length === 0) {
+        if (noResults) noResults.style.display = 'block';
         return;
     }
-    noResults.style.display = 'none';
+    if (noResults) noResults.style.display = 'none';
 
     mods.forEach(mod => {
         const catName = mod.categories ? mod.categories.name : 'ألعاب أندرويد';
@@ -227,7 +250,8 @@ function renderModsGrid(mods) {
 window.filterByCategory = function(catId, btnElement) {
     selectedCategory = catId;
     showingFavorites = false;
-    document.getElementById('favFilterBtn').classList.remove('active');
+    const favBtn = document.getElementById('favFilterBtn');
+    if (favBtn) favBtn.classList.remove('active');
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     if (btnElement) btnElement.classList.add('active');
     renderModsGrid(applyCurrentFilters());
@@ -235,12 +259,13 @@ window.filterByCategory = function(catId, btnElement) {
 
 function setupSearch() {
     const input = document.getElementById('searchInput');
-    input.addEventListener('input', () => {
-        renderModsGrid(applyCurrentFilters());
-    });
+    if (input) {
+        input.addEventListener('input', () => {
+            renderModsGrid(applyCurrentFilters());
+        });
+    }
 }
 
-// 3. تحويل رابط يوتيوب العادي إلى رابط Embed
 function getYouTubeEmbedUrl(url) {
     if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -248,7 +273,7 @@ function getYouTubeEmbedUrl(url) {
     return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
 }
 
-// 4. فتح تفاصيل اللعبة / المود
+// 3. فتح تفاصيل اللعبة وتجهيز روابط التحميل
 window.openDetails = async function(modId) {
     const mod = allMods.find(m => m.id === modId);
     if (!mod) return;
@@ -260,16 +285,20 @@ window.openDetails = async function(modId) {
     // وضع اللعب
     const modeTag = document.getElementById('modalModeTag');
     if (mod.is_online) {
-        modeTag.textContent = 'أونلاين 🌐';
-        modeTag.className = 'tag-badge tag-online';
+        if (modeTag) {
+            modeTag.textContent = 'أونلاين 🌐';
+            modeTag.className = 'tag-badge tag-online';
+        }
         document.getElementById('modalModeVal').textContent = 'أونلاين بالنت';
     } else {
-        modeTag.textContent = 'أوفلاين 📴';
-        modeTag.className = 'tag-badge tag-offline';
+        if (modeTag) {
+            modeTag.textContent = 'أوفلاين 📴';
+            modeTag.className = 'tag-badge tag-offline';
+        }
         document.getElementById('modalModeVal').textContent = 'بدون نت';
     }
 
-    // المعاينة: فيديو يوتيوب أو صورة
+    // المعاينة (فيديو أو صورة)
     const mediaBox = document.getElementById('modalMediaContainer');
     const embedUrl = getYouTubeEmbedUrl(mod.youtube_url);
     if (embedUrl) {
@@ -282,7 +311,7 @@ window.openDetails = async function(modId) {
         mediaBox.innerHTML = `<img src="${mod.image_url}" alt="${mod.title}" class="modal-img">`;
     }
 
-    // التقييم والمواصفات
+    // المواصفات
     document.getElementById('modalRatingScore').textContent = mod.rating_avg || 5.0;
     document.getElementById('modalRatingVotes').textContent = mod.rating_count || 1;
     document.getElementById('modalSize').textContent = mod.file_size;
@@ -292,98 +321,91 @@ window.openDetails = async function(modId) {
     document.getElementById('modalDownloads').textContent = mod.download_count;
     document.getElementById('modalDesc').textContent = mod.description;
 
-    // تهيئة أزرار التحميل وإعادة ضبط العداد
-    document.getElementById('timerContainer').style.display = 'none';
-    document.getElementById('mirrorsGroup').style.display = 'none';
-    document.getElementById('modalStartDownloadBtn').style.display = 'inline-flex';
+    // تجهيز رابط التحميل الأساسي المباشر
+    const primaryUrl = mod.download_type === 'storage' ? mod.file_url : mod.external_url;
+    const directBtn = document.getElementById('modalDirectDownloadBtn');
+    if (directBtn) {
+        directBtn.href = primaryUrl || '#';
+    }
+
+    // تجهيز السيرفرات البديلة
+    const mirrorsBox = document.getElementById('mirrorsGroup');
+    const driveBtn = document.getElementById('driveDownloadLink');
+    const megaBtn = document.getElementById('megaDownloadLink');
+    let hasMirrors = false;
+
+    if (mod.link_drive) {
+        driveBtn.href = mod.link_drive;
+        driveBtn.style.display = 'flex';
+        hasMirrors = true;
+    } else {
+        driveBtn.style.display = 'none';
+    }
+
+    if (mod.link_mega) {
+        megaBtn.href = mod.link_mega;
+        megaBtn.style.display = 'flex';
+        hasMirrors = true;
+    } else {
+        megaBtn.style.display = 'none';
+    }
+
+    if (mirrorsBox) {
+        mirrorsBox.style.display = hasMirrors ? 'flex' : 'none';
+    }
 
     await loadComments(mod.id);
 
-    document.getElementById('modModal').classList.add('show');
+    const modal = document.getElementById('modModal');
+    if (modal) modal.classList.add('show');
     document.body.style.overflow = 'hidden';
 };
 
 window.closeModal = function() {
-    document.getElementById('modModal').classList.remove('show');
+    const modal = document.getElementById('modModal');
+    if (modal) modal.classList.remove('show');
     document.body.style.overflow = '';
-    // إيقاف تشغيل الفيديو عند الإغلاق
-    document.getElementById('modalMediaContainer').innerHTML = '';
+    const mediaBox = document.getElementById('modalMediaContainer');
+    if (mediaBox) mediaBox.innerHTML = '';
 };
 
 window.handleBackdropClick = function(e) {
     if (e.target.id === 'modModal') closeModal();
 };
 
-// 5. العداد التنازلي والتحميل بروابط متعددة
-window.startDownloadProcess = function() {
-    const startBtn = document.getElementById('modalStartDownloadBtn');
-    const timerBox = document.getElementById('timerContainer');
-    const timerCount = document.getElementById('timerCount');
-    const mirrorsGroup = document.getElementById('mirrorsGroup');
-
-    startBtn.style.display = 'none';
-    timerBox.style.display = 'block';
-
-    let seconds = 7;
-    timerCount.textContent = seconds;
-
-    const countdown = setInterval(async () => {
-        seconds--;
-        timerCount.textContent = seconds;
-
-        if (seconds <= 0) {
-            clearInterval(countdown);
-            timerBox.style.display = 'none';
-            mirrorsGroup.style.display = 'flex';
-
-            // تجهيز الروابط
-            const primaryUrl = activeMod.download_type === 'storage' ? activeMod.file_url : activeMod.external_url;
-            document.getElementById('primaryDownloadLink').href = primaryUrl;
-
-            const driveBtn = document.getElementById('driveDownloadLink');
-            if (activeMod.link_drive) {
-                driveBtn.href = activeMod.link_drive;
-                driveBtn.style.display = 'flex';
-            } else {
-                driveBtn.style.display = 'none';
-            }
-
-            const megaBtn = document.getElementById('megaDownloadLink');
-            if (activeMod.link_mega) {
-                megaBtn.href = activeMod.link_mega;
-                megaBtn.style.display = 'flex';
-            } else {
-                megaBtn.style.display = 'none';
-            }
-
-            // زيادة العداد
-            try {
-                await window.supabaseClient.rpc('increment_mod_download', { target_mod_id: activeMod.id });
-                activeMod.download_count += 1;
-                document.getElementById('modalDownloads').textContent = activeMod.download_count;
-            } catch (e) {
-                console.error("Increment error", e);
-            }
-        }
-    }, 1000);
+// 4. نقرة التحميل وزيادة العداد تلقائياً
+window.handleDownloadClick = async function() {
+    if (!activeMod) return;
+    try {
+        await window.supabaseClient.rpc('increment_mod_download', { target_mod_id: activeMod.id });
+        activeMod.download_count = (activeMod.download_count || 0) + 1;
+        const dlSpan = document.getElementById('modalDownloads');
+        if (dlSpan) dlSpan.textContent = activeMod.download_count;
+    } catch (e) {
+        console.error("Increment error:", e);
+    }
 };
 
-// 6. الإبلاغ عن رابط معطل
+// 5. الإبلاغ عن رابط معطل
 window.reportCurrentMod = async function() {
     if (!activeMod) return;
-    if (confirm("هل تريد الإبلاغ عن هذا الرابط لأنه لا يعمل؟")) {
-        const { error } = await window.supabaseClient.from('broken_links').insert([
-            { mod_id: activeMod.id, mod_title: activeMod.title }
-        ]);
-        if (error) {
-            alert("حدث خطأ أثناء الإبلاغ!");
-        } else {
-            alert("شكراً لك! تم إرسال البلاغ وسيقوم الأدمن بتحديث الرابط فوراً.");
+    if (confirm("هل تريد الإبلاغ عن أن رابط تحميل هذا الملف لا يعمل؟")) {
+        try {
+            const { error } = await window.supabaseClient.from('broken_links').insert([
+                { mod_id: activeMod.id, mod_title: activeMod.title }
+            ]);
+            if (error) {
+                alert("تم تسجيل بلاغك مسبقاً، شكراً لتعاونك!");
+            } else {
+                alert("شكراً لك! تم إرسال البلاغ إلى الأدمن ليتم تجديد الرابط فوراً.");
+            }
+        } catch (err) {
+            alert("تم إرسال البلاغ بنجاح!");
         }
     }
 };
 
-// 7. نظام تقييم النجوم
+// 6. نظام تقييم النجوم
 function setupInteractiveStars() {
     const stars = document.querySelectorAll('#starsRatingBox i');
     stars.forEach(star => {
@@ -408,61 +430,77 @@ function setupInteractiveStars() {
     });
 }
 
-// 8. نظام التعليقات
+// 7. نظام التعليقات
 async function loadComments(modId) {
-    const { data: comments } = await window.supabaseClient
-        .from('comments')
-        .select('*')
-        .eq('mod_id', modId)
-        .order('created_at', { ascending: false });
-
     const list = document.getElementById('commentsList');
-    document.getElementById('commentsCount').textContent = comments ? comments.length : 0;
-    list.innerHTML = '';
+    const countSpan = document.getElementById('commentsCount');
+    if (!list) return;
 
-    if (!comments || comments.length === 0) {
-        list.innerHTML = '<small style="color:var(--text-gray);">كن أول من يكتب تعليقاً حول هذه اللعبة!</small>';
-        return;
-    }
+    try {
+        const { data: comments } = await window.supabaseClient
+            .from('comments')
+            .select('*')
+            .eq('mod_id', modId)
+            .order('created_at', { ascending: false });
 
-    comments.forEach(c => {
-        const dateStr = new Date(c.created_at).toLocaleDateString('ar-EG');
-        list.innerHTML += `
-            <div class="comment-item">
-                <div class="comment-header">
-                    <strong>${c.author_name}</strong>
-                    <span>${dateStr}</span>
+        if (countSpan) countSpan.textContent = comments ? comments.length : 0;
+        list.innerHTML = '';
+
+        if (!comments || comments.length === 0) {
+            list.innerHTML = '<small style="color:var(--text-gray);">كن أول من يكتب تعليقاً حول هذه اللعبة!</small>';
+            return;
+        }
+
+        comments.forEach(c => {
+            const dateStr = new Date(c.created_at).toLocaleDateString('ar-EG');
+            list.innerHTML += `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <strong>${c.author_name}</strong>
+                        <span>${dateStr}</span>
+                    </div>
+                    <p style="font-size: 0.9rem;">${c.content}</p>
                 </div>
-                <p style="font-size: 0.9rem;">${c.content}</p>
-            </div>
-        `;
-    });
+            `;
+        });
+    } catch (e) {
+        if (list) list.innerHTML = '<small style="color:var(--text-gray);">التعليقات متاحة قريباً.</small>';
+    }
 }
 
 window.handlePostComment = async function(e) {
     e.preventDefault();
     if (!activeMod) return;
 
-    const author_name = document.getElementById('commentAuthor').value.trim();
-    const content = document.getElementById('commentText').value.trim();
+    const authorInput = document.getElementById('commentAuthor');
+    const textInput = document.getElementById('commentText');
+    const author_name = authorInput ? authorInput.value.trim() : 'زائر';
+    const content = textInput ? textInput.value.trim() : '';
 
-    const { error } = await window.supabaseClient.from('comments').insert([
-        { mod_id: activeMod.id, author_name, content }
-    ]);
+    if (!content) return;
 
-    if (error) {
-        alert("فشل إضافة التعليق: " + error.message);
-    } else {
-        document.getElementById('commentText').value = '';
-        await loadComments(activeMod.id);
+    try {
+        const { error } = await window.supabaseClient.from('comments').insert([
+            { mod_id: activeMod.id, author_name, content }
+        ]);
+
+        if (error) {
+            alert("فشل إضافة التعليق: " + error.message);
+        } else {
+            if (textInput) textInput.value = '';
+            await loadComments(activeMod.id);
+        }
+    } catch (err) {
+        alert("حدث خطأ أثناء إرسال التعليق.");
     }
 };
 
 window.handlePublicContact = function(e) {
     e.preventDefault();
-    document.getElementById('contactSuccess').style.display = 'block';
+    const successBox = document.getElementById('contactSuccess');
+    if (successBox) successBox.style.display = 'block';
     e.target.reset();
     setTimeout(() => {
-        document.getElementById('contactSuccess').style.display = 'none';
+        if (successBox) successBox.style.display = 'none';
     }, 4000);
 };

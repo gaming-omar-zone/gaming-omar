@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة الإدارة | Gaming Omar</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="background-color: var(--bg-dark);">
+
+  <!-- شاشة الدخول -->
+  <div id="loginView" class="admin-login-screen">
+    <div class="login-card">
+      <div class="logo" style="justify-content: center; margin-bottom: 8px;">
+        <i class="fa-solid fa-shield-halved logo-icon"></i>
+        <span>لوحة تحكم <span class="highlight">الأدمن</span></span>
+      </div>
+      <p class="login-subtitle">مصرح بها فقط لصاحب الموقع (Gaming Omar)</p>
+
+      <form id="loginForm" onsubmit="handleAdminLogin(event)">
+        <div class="form-group">
+          <label><i class="fa-solid fa-envelope"></i> البريد الإلكتروني</label>
+          <input type="email" id="adminEmail" required placeholder="name@example.com">
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label><i class="fa-solid fa-key"></i> كلمة المرور</label>
+          <input type="password" id="adminPassword" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="loginBtn" style="margin-top: 20px;">
+          <i class="fa-solid fa-right-to-bracket"></i> تسجيل الدخول
+        </button>
+      </form>
+      <div id="loginError" class="alert-danger" style="display: none; margin-top: 15px;"></div>
+      <div style="text-align: center; margin-top: 20px;">
+        <a href="index.html" style="color: var(--text-gray); text-decoration: none;"><i class="fa-solid fa-arrow-right"></i> العودة للموقع الرئيسي</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- لوحة التحكم بعد التحقق -->
+  <div id="dashboardView" style="display: none;">
+    <header class="admin-nav">
+      <div class="nav-container">
+        <div class="logo">
+          <i class="fa-solid fa-gamepad logo-icon"></i>
+          <span>Gaming Omar <span class="highlight">Admin</span></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span id="userEmailTag" style="font-size: 0.85rem; color: var(--text-gray);"><i class="fa-solid fa-user-shield"></i> أدمن</span>
+          <button class="btn btn-secondary btn-sm" onclick="handleLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container" style="padding-top: 20px; padding-bottom: 60px;">
+      <!-- إحصائيات -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <i class="fa-solid fa-boxes-stacked stat-icon"></i>
+          <div>
+            <h3 id="statTotalMods">0</h3>
+            <span style="color: var(--text-gray);">إجمالي المودات</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <i class="fa-solid fa-cloud-arrow-down stat-icon highlight"></i>
+          <div>
+            <h3 id="statTotalDownloads">0</h3>
+            <span style="color: var(--text-gray);">إجمالي التحميلات</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <i class="fa-solid fa-list-check stat-icon"></i>
+          <div>
+            <h3 id="statTotalCats">0</h3>
+            <span style="color: var(--text-gray);">إجمالي الأقسام</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- تبويبات -->
+      <div class="admin-tabs">
+        <button class="tab-btn active" onclick="switchAdminTab('modsTab')"><i class="fa-solid fa-wrench"></i> إدارة المودات</button>
+        <button class="tab-btn" onclick="switchAdminTab('categoriesTab')"><i class="fa-solid fa-folder-tree"></i> إدارة الأقسام</button>
+        <button class="tab-btn" onclick="switchAdminTab('settingsTab')"><i class="fa-solid fa-sliders"></i> البانر والإعدادات</button>
+      </div>
+
+      <!-- تبويب المودات -->
+      <div id="modsTab" class="admin-tab-content active">
+        <div class="tab-header">
+          <h3>قائمة المودات المرفوعة</h3>
+          <button class="btn btn-primary" onclick="openModFormModal()"><i class="fa-solid fa-plus"></i> إضافة مود جديد</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>الصورة</th>
+                <th>العنوان</th>
+                <th>القسم</th>
+                <th>الحجم</th>
+                <th>التحميلات</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="modsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- تبويب الأقسام -->
+      <div id="categoriesTab" class="admin-tab-content">
+        <div class="tab-header">
+          <h3>أقسام الموقع</h3>
+          <button class="btn btn-primary" onclick="promptAddCategory()"><i class="fa-solid fa-plus"></i> قسم جديد</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>اسم القسم</th>
+                <th>المعرف (Slug)</th>
+                <th>الأيقونة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="categoriesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- تبويب الإعدادات -->
+      <div id="settingsTab" class="admin-tab-content">
+        <div class="page-card">
+          <h3>تعديل محتوى البانر الرئيسي (Hero)</h3>
+          <form onsubmit="handleSaveSettings(event)" class="contact-form">
+            <div class="form-group">
+              <label>الشارة العلوية (Badge)</label>
+              <input type="text" id="settingBadge" required>
+            </div>
+            <div class="form-group">
+              <label>العنوان الرئيسي الكبير</label>
+              <input type="text" id="settingTitle" required>
+            </div>
+            <div class="form-group">
+              <label>الوصف الترحيبي</label>
+              <textarea id="settingSubtitle" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال إضافة وتعديل المود -->
+  <div class="modal-backdrop" id="modFormModal">
+    <div class="modal-dialog">
+      <button class="modal-close" onclick="closeModFormModal()">&times;</button>
+      <div class="modal-header">
+        <h2 id="modFormTitle">إضافة مود جديد</h2>
+      </div>
+      <form id="modForm" onsubmit="handleSaveMod(event)" class="contact-form">
+        <input type="hidden" id="editModId">
+        
+        <div class="form-group">
+          <label>عنوان المود</label>
+          <input type="text" id="formModTitle" required placeholder="مثال: حزمة سيارات واقعية">
+        </div>
+
+        <div class="form-group">
+          <label>القسم</label>
+          <select id="formModCategory" required></select>
+        </div>
+
+        <div class="form-group">
+          <label>وصف قصير</label>
+          <input type="text" id="formModShortDesc" required placeholder="وصف سريع من سطر واحد">
+        </div>
+
+        <div class="form-group">
+          <label>الوصف وطريقة التركيب</label>
+          <textarea id="formModFullDesc" rows="4" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>حجم الملف (مثال: 45 MB)</label>
+            <input type="text" id="formModSize" required>
+          </div>
+          <div class="form-group">
+            <label>الإصدار</label>
+            <input type="text" id="formModVersion" value="GTA SA v2.00+" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>صورة المود (رفع ملف من الهاتف أو رابط مباشر)</label>
+          <input type="file" id="formModImgFile" accept="image/*">
+          <input type="url" id="formModImgUrl" placeholder="أو ضع رابط صورة خارجي">
+        </div>
+
+        <div class="form-group">
+          <label>طريقة التنزيل</label>
+          <select id="formDownloadType" onchange="toggleDownloadFields()">
+            <option value="external">رابط خارجي (MediaFire / Google Drive)</option>
+            <option value="storage">رفع ملف التعديل مباشرة إلى السيرفر (ZIP, RAR, APK)</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="externalLinkGroup">
+          <label>رابط التحميل المباشر</label>
+          <input type="url" id="formExternalUrl" placeholder="https://www.mediafire.com/file/...">
+        </div>
+
+        <div class="form-group" id="storageUploadGroup" style="display: none;">
+          <label>اختر ملف المود (ZIP, RAR, APK)</label>
+          <input type="file" id="formModBinaryFile" accept=".zip,.rar,.7z,.apk">
+        </div>
+
+        <div id="uploadProgress" style="display:none; color: var(--primary-red); font-weight: bold; margin: 10px 0;">
+          <i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الملفات إلى السيرفر... يرجى الانتظار
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="saveModBtn">
+          <i class="fa-solid fa-check"></i> حفظ ونشر المود
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="supabase-client.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

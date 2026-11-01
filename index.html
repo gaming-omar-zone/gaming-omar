@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gaming Omar | مودات GTA San Andreas للأندرويد</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Supabase JS Client v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- شريط التنقل العلوي -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="logo" onclick="switchView('home')">
+        <i class="fa-solid fa-gamepad logo-icon"></i>
+        <span>Gaming <span class="highlight">Omar</span></span>
+      </div>
+
+      <button class="nav-toggle" id="navToggle" aria-label="القائمة">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <nav class="nav-links" id="navLinks">
+        <a href="#home" class="nav-link active" onclick="switchView('home')"><i class="fa-solid fa-house"></i> الرئيسية</a>
+        <a href="#mods" class="nav-link" onclick="switchView('mods')"><i class="fa-solid fa-fire"></i> تصفح المودات</a>
+        <a href="#about" class="nav-link" onclick="switchView('about')"><i class="fa-solid fa-circle-info"></i> من نحن</a>
+        <a href="#contact" class="nav-link" onclick="switchView('contact')"><i class="fa-solid fa-envelope"></i> اتصل بنا</a>
+        <a href="admin.html" class="nav-link admin-btn"><i class="fa-solid fa-lock"></i> لوحة الأدمن</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- الصفحة الرئيسية -->
+  <main id="viewHome" class="view active">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <span class="hero-badge" id="heroBadge"><i class="fa-brands fa-android"></i> منصة هواتف الأندرويد</span>
+        <h1 class="hero-title" id="heroTitle">موقع Gaming Omar الرسمي</h1>
+        <p class="hero-desc" id="heroSubtitle">المنصة الأولى لتحميل أحدث وأقوى مودات GTA San Andreas Android بروابط سريعة ومباشرة ومجربة 100%.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="switchView('mods')">
+            <i class="fa-solid fa-download"></i> تصفح جميع المودات
+          </button>
+          <button class="btn btn-secondary" onclick="switchView('about')">
+            <i class="fa-solid fa-shield-halved"></i> سياسة الأمان والملفات
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- قسم المودات والبحث -->
+    <section class="container mods-section" id="mods">
+      <div class="section-header">
+        <h2 class="section-title"><i class="fa-solid fa-cubes highlight"></i> مكتبة التعديلات</h2>
+        <p class="section-subtitle">اختر القسم المفضل لديك أو استخدم محرك البحث المباشر</p>
+      </div>
+
+      <!-- البحث -->
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="searchInput" placeholder="ابحث باسم المود أو نوع السيارة أو السلاح...">
+      </div>
+
+      <!-- فلترة الفئات الحية من قاعدة البيانات -->
+      <div class="categories-filter" id="categoriesBar">
+        <button class="filter-btn active" data-category="all">
+          <i class="fa-solid fa-border-all"></i> الكل
+        </button>
+        <!-- سيتم توليد الأزرار ديناميكياً من Supabase -->
+      </div>
+
+      <!-- مؤشر التحميل -->
+      <div id="loadingIndicator" class="loading-box">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <p>جاري جلب أحدث المودات من قاعدة البيانات...</p>
+      </div>
+
+      <!-- شبكة المودات -->
+      <div class="mods-grid" id="modsGrid"></div>
+
+      <!-- تنبيه لا توجد مودات -->
+      <div id="noResults" class="no-results" style="display: none;">
+        <i class="fa-regular fa-face-frown"></i>
+        <h3>لا توجد مودات مطابقة لبحثك</h3>
+        <p>جرب البحث بكلمات أخرى أو اختر فئة مختلفة.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- صفحة من نحن -->
+  <section id="viewAbout" class="view container page-padding">
+    <div class="page-card">
+      <h2 class="section-title"><i class="fa-solid fa-circle-info highlight"></i> عن Gaming Omar</h2>
+      <div class="page-text">
+        <p>مرحباً بكم في <strong>Gaming Omar</strong>، الموقع العربي المتخصص في نشر أحدث وأفضل تعديلات (Mods) لعبة Grand Theft Auto San Andreas بنسختها الخاصة بنظام أندرويد.</p>
+        <h3><i class="fa-solid fa-crosshairs highlight"></i> غايتنا</h3>
+        <p>توفير محتوى عالي الجودة متوافق مع كافة معالجات الأجهزة (Mali, Adreno, PowerVR) مع روابط مباشرة دون اختصار روابط مزعج أو برمجيات خبيثة.</p>
+        <h3><i class="fa-solid fa-shield-virus highlight"></i> الأمان</h3>
+        <p>يتم فحص وتجربة جميع ملفات الـ (ZIP, RAR, APK) على هواتف حقيقية قبل نشرها لضمان تجربة لعب بدون لاج أو كراش.</p>
+      </div>
+      <button class="btn btn-secondary mt-20" onclick="switchView('home')">العودة للرئيسية</button>
+    </div>
+  </section>
+
+  <!-- صفحة اتصل بنا -->
+  <section id="viewContact" class="view container page-padding">
+    <div class="page-card">
+      <h2 class="section-title"><i class="fa-solid fa-envelope highlight"></i> اتصل بنا</h2>
+      <p class="section-subtitle">هل تواجه مشكلة في تشغيل مود أو ترغب في اقتراح تعديل جديد؟</p>
+      <form class="contact-form" onsubmit="handlePublicContact(event)">
+        <div class="form-group">
+          <label>الاسم</label>
+          <input type="text" id="contactName" required placeholder="أدخل اسمك">
+        </div>
+        <div class="form-group">
+          <label>البريد الإلكتروني</label>
+          <input type="email" id="contactEmail" required placeholder="name@example.com">
+        </div>
+        <div class="form-group">
+          <label>الرسالة</label>
+          <textarea id="contactMsg" rows="5" required placeholder="اكتب رسالتك بالتفصيل..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
+      </form>
+      <div id="contactSuccess" class="alert-success" style="display: none; margin-top: 15px;">
+        تم استلام رسالتك بنجاح! شكراً لدعمكم موقع Gaming Omar.
+      </div>
+    </div>
+  </section>
+
+  <!-- نافذة تفاصيل المود والتحميل المنبثقة -->
+  <div class="modal-backdrop" id="modModal" onclick="handleBackdropClick(event)">
+    <div class="modal-dialog">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      
+      <div class="modal-header">
+        <span class="badge" id="modalBadge">فئة المود</span>
+        <h2 id="modalTitle">اسم المود</h2>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-image-box">
+          <img id="modalImg" src="" alt="صورة المود" class="modal-img">
+        </div>
+
+        <div class="specs-grid">
+          <div class="spec-card">
+            <span class="spec-title"><i class="fa-solid fa-file-zipper highlight"></i> الحجم</span>
+            <span class="spec-val" id="modalSize">0 MB</span>
+          </div>
+          <div class="spec-card">
+            <span class="spec-title"><i class="fa-brands fa-android highlight"></i> إصدار اللعبة</span>
+            <span class="spec-val" id="modalVersion">GTA SA v2.00</span>
+          </div>
+          <div class="spec-card">
+            <span class="spec-title"><i class="fa-solid fa-download highlight"></i> مرات التحميل</span>
+            <span class="spec-val" id="modalDownloads">0</span>
+          </div>
+        </div>
+
+        <div class="details-desc">
+          <h4><i class="fa-solid fa-align-right highlight"></i> الوصف وطريقة التثبيت:</h4>
+          <p id="modalDesc"></p>
+        </div>
+
+        <div class="download-action-box">
+          <button id="modalDownloadBtn" class="btn btn-download-big" onclick="triggerDownload()">
+            <i class="fa-solid fa-circle-down"></i> بدء تحميل الملف الآن
+          </button>
+          <small class="secure-tag"><i class="fa-solid fa-lock"></i> رابط آمن ومباشر ومفحوص</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- التذييل -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <div class="logo">
+          <i class="fa-solid fa-gamepad logo-icon"></i>
+          <span>Gaming <span class="highlight">Omar</span></span>
+        </div>
+        <p>بوابتك الآمنة لتحميل مودات جاتا سان أندرياس للأندرويد.</p>
+      </div>
+      <div class="footer-links">
+        <h4>الأقسام الرئيسية</h4>
+        <ul id="footerCats"></ul>
+      </div>
+      <div class="footer-social">
+        <h4>تابعنا</h4>
+        <div class="social-icons">
+          <a href="#"><i class="fa-brands fa-youtube"></i></a>
+          <a href="#"><i class="fa-brands fa-telegram"></i></a>
+          <a href="#"><i class="fa-brands fa-facebook"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span id="yearSpan"></span> Gaming Omar - جميع الحقوق محفوظة لمالكي التعديلات وRockstar Games.</p>
+    </div>
+  </footer>
+
+  <script src="supabase-client.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

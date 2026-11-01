@@ -77,6 +77,13 @@
           </div>
         </div>
         <div class="stat-card">
+          <i class="fa-solid fa-triangle-exclamation stat-icon" style="color: #ff4757;"></i>
+          <div>
+            <h3 id="statTotalReports">0</h3>
+            <span style="color: var(--text-gray);">بلاغات الروابط</span>
+          </div>
+        </div>
+        <div class="stat-card">
           <i class="fa-solid fa-list-check stat-icon"></i>
           <div>
             <h3 id="statTotalCats">0</h3>
@@ -85,9 +92,10 @@
         </div>
       </div>
 
-      <!-- تبويبات -->
+      <!-- تبويبات لوحة التحكم -->
       <div class="admin-tabs">
         <button class="tab-btn active" onclick="switchAdminTab('modsTab')"><i class="fa-solid fa-gamepad"></i> إدارة الألعاب والمودات</button>
+        <button class="tab-btn" onclick="switchAdminTab('reportsTab')"><i class="fa-solid fa-triangle-exclamation"></i> بلاغات الروابط المعطلة</button>
         <button class="tab-btn" onclick="switchAdminTab('categoriesTab')"><i class="fa-solid fa-folder-tree"></i> إدارة التصنيفات</button>
         <button class="tab-btn" onclick="switchAdminTab('settingsTab')"><i class="fa-solid fa-sliders"></i> البانر والإعدادات</button>
       </div>
@@ -107,11 +115,32 @@
                 <th>العنوان</th>
                 <th>التصنيف</th>
                 <th>الحجم</th>
+                <th>التقييم</th>
                 <th>التحميلات</th>
                 <th>الإجراءات</th>
               </tr>
             </thead>
             <tbody id="modsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- تبويب بلاغات الروابط المعطلة -->
+      <div id="reportsTab" class="admin-tab-content">
+        <div class="tab-header">
+          <h3>البلاغات المرسلة من الزوار</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadAdminReports()"><i class="fa-solid fa-arrows-rotate"></i> تحديث</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>اسم اللعبة / المود المبلغ عنها</th>
+                <th>تاريخ البلاغ</th>
+                <th>الإجراء</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -161,7 +190,7 @@
     </div>
   </div>
 
-  <!-- مودال إضافة وتعديل لعبة / مود -->
+  <!-- مودال إضافة وتعديل لعبة / مود المطور -->
   <div class="modal-backdrop" id="modFormModal">
     <div class="modal-dialog">
       <button class="modal-close" onclick="closeModFormModal()">&times;</button>
@@ -176,9 +205,18 @@
           <input type="text" id="formModTitle" required placeholder="مثال: لعبة eFootball 2026 مهكرة أو مود سيارة نيسان GTR">
         </div>
 
-        <div class="form-group">
-          <label>التصنيف</label>
-          <select id="formModCategory" required></select>
+        <div class="form-row">
+          <div class="form-group">
+            <label>التصنيف</label>
+            <select id="formModCategory" required></select>
+          </div>
+          <div class="form-group">
+            <label>نوع اللعب</label>
+            <select id="formIsOnline">
+              <option value="false">أوفلاين (بدون إنترنت) 📴</option>
+              <option value="true">أونلاين (بالإنترنت) 🌐</option>
+            </select>
+          </div>
         </div>
 
         <div class="form-group">
@@ -187,37 +225,57 @@
         </div>
 
         <div class="form-group">
-          <label>الوصف الشامل ومميزات اللعبة / طريقة التركيب</label>
-          <textarea id="formModFullDesc" rows="4" required placeholder="اكتب هنا تفاصيل اللعبة، مميزات التهكير، وطريقة نقل ملفات OBB أو Data إن وجدت..."></textarea>
+          <label>الوصف الشامل ومميزات اللعبة وطريقة التثبيت</label>
+          <textarea id="formModFullDesc" rows="4" required placeholder="اكتب هنا تفاصيل اللعبة، مميزات التهكير، وطريقة نقل ملفات OBB إن وجدت..."></textarea>
         </div>
 
+        <!-- متطلبات التشغيل -->
         <div class="form-row">
           <div class="form-group">
-            <label>حجم الملف (مثال: 95 MB أو 1.2 GB)</label>
+            <label>حجم الملف (مثال: 95 MB أو 1.5 GB)</label>
             <input type="text" id="formModSize" required>
           </div>
           <div class="form-group">
             <label>إصدار الأندرويد المطلوب أو اللعبة</label>
-            <input type="text" id="formModVersion" value="Android 6.0+" required placeholder="مثال: Android 7.0+ أو GTA SA v2.10">
+            <input type="text" id="formModVersion" value="Android 5.0+" required>
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label>الرام الأدنى المطلوب</label>
+            <input type="text" id="formRamReq" value="2 GB" required>
+          </div>
+          <div class="form-group">
+            <label>المعالجات المدعومة</label>
+            <input type="text" id="formGpuCompat" value="Mali / Adreno / PowerVR" required>
+          </div>
+        </div>
+
+        <!-- رابط فيديو يوتيوب -->
+        <div class="form-group">
+          <label><i class="fa-brands fa-youtube highlight"></i> رابط فيديو يوتيوب للمعاينة (اختياري)</label>
+          <input type="url" id="formYoutubeUrl" placeholder="https://www.youtube.com/watch?v=...">
+        </div>
+
+        <!-- بوستر اللعبة -->
         <div class="form-group">
           <label>بوستر / صورة اللعبة (رفع صورة أو رابط مباشر)</label>
           <input type="file" id="formModImgFile" accept="image/*">
           <input type="url" id="formModImgUrl" placeholder="أو ضع رابط صورة مباشر">
         </div>
 
+        <!-- روابط التحميل المتعددة (Mirrors) -->
         <div class="form-group">
-          <label>طريقة توفير رابط التحميل</label>
+          <label>طريقة توفير الرابط الأساسي</label>
           <select id="formDownloadType" onchange="toggleDownloadFields()">
-            <option value="external">رابط خارجي مباشر (MediaFire / Google Drive / Mega)</option>
-            <option value="storage">رفع ملف التطبيق/المود مباشرة إلى السيرفر (APK / ZIP / RAR)</option>
+            <option value="external">رابط خارجي مباشر (MediaFire / Google Drive)</option>
+            <option value="storage">رفع ملف اللعبة مباشرة إلى السيرفر (APK / ZIP)</option>
           </select>
         </div>
 
         <div class="form-group" id="externalLinkGroup">
-          <label>رابط التحميل المباشر (ميديافاير، ميجا، أو درايف)</label>
+          <label><i class="fa-solid fa-link highlight"></i> الرابط الأساسي للتحميل (MediaFire أو غيره)</label>
           <input type="url" id="formExternalUrl" placeholder="https://www.mediafire.com/file/...">
         </div>
 
@@ -226,8 +284,20 @@
           <input type="file" id="formModBinaryFile" accept=".apk,.zip,.rar,.7z,.xapk">
         </div>
 
+        <!-- سيرفرات بديلة -->
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fa-brands fa-google-drive highlight"></i> سيرفر بديل (Google Drive - اختياري)</label>
+            <input type="url" id="formLinkDrive" placeholder="https://drive.google.com/...">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-server highlight"></i> سيرفر بديل (Mega - اختياري)</label>
+            <input type="url" id="formLinkMega" placeholder="https://mega.nz/...">
+          </div>
+        </div>
+
         <div id="uploadProgress" style="display:none; color: var(--primary-red); font-weight: bold; margin: 10px 0;">
-          <i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الملف إلى السيرفر... يرجى الانتظار
+          <i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الملفات إلى السيرفر... يرجى الانتظار
         </div>
 
         <button type="submit" class="btn btn-primary btn-block" id="saveModBtn">

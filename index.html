@@ -8,8 +8,6 @@
   <meta name="description" content="موقع Gaming Omar الرسمي لتحميل أحدث ألعاب الأندرويد المهكرة والأوفلاين، وأقوى مودات GTA San Andreas بروابط مباشرة ومفحوصة 100%.">
   <meta name="keywords" content="العاب اندرويد مهكرة, مودات gta sa, تحميل gta san andreas للاندرويد, apk mod, Gaming Omar">
   <meta property="og:title" content="Gaming Omar | منصة ألعاب الأندرويد ومودات GTA SA">
-  <meta property="og:description" content="حمل أحدث ألعاب وتعديلات الأندرويد بروابط سريعة ومباشرة من مجتمع Gaming Omar.">
-  <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +20,7 @@
 <body>
 
   <!-- زر التيليجرام العائم المباشر لقناتك -->
-  <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="floating-community-btn" title="انضم لقناتنا الرسمية على التيليجرام">
+  <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" class="floating-community-btn" title="انضم لقناتنا الرسمية على التيليجرام">
     <i class="fa-brands fa-telegram"></i>
   </a>
 
@@ -63,7 +61,7 @@
           <button class="btn btn-secondary" onclick="showFavoritesOnly()">
             <i class="fa-solid fa-heart" style="color:#ff4757;"></i> المفضلة (<span id="favCount">0</span>)
           </button>
-          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="background: rgba(0, 136, 204, 0.2); border-color: #0088cc;">
+          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" class="btn btn-secondary" style="background: rgba(0, 136, 204, 0.2); border-color: #0088cc;">
             <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> قناتنا تلغرام
           </a>
         </div>
@@ -73,24 +71,24 @@
     <!-- مساحة إعلانية جاهزة -->
     <div class="container">
       <div class="ad-slot">
-        <i class="fa-solid fa-rectangle-ad"></i> مساحة إعلانية - يمكنك وضع كود الإعلانات أو شفرة AdSense هنا
+        <i class="fa-solid fa-rectangle-ad"></i> مساحة إعلانية - مجهزة لوضع شفرة AdSense أو أي شبكة إعلانية
       </div>
     </div>
 
-    <!-- قسم الألعاب والمودات والبحث -->
+    <!-- قسم الألعاب والمودات -->
     <section class="container mods-section" id="mods">
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-cubes highlight"></i> مكتبة الألعاب والتعديلات</h2>
         <p class="section-subtitle">اختر التصنيف المفضل لديك أو استخدم محرك البحث المباشر</p>
       </div>
 
-      <!-- محرك البحث السريع -->
+      <!-- محرك البحث -->
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
         <input type="text" id="searchInput" placeholder="ابحث باسم اللعبة، ملف APK، نوع السيارة أو المود...">
       </div>
 
-      <!-- أزرار التصنيفات + المفضلة -->
+      <!-- التصنيفات -->
       <div class="categories-filter" id="categoriesBar">
         <button class="filter-btn active" data-category="all">
           <i class="fa-solid fa-border-all"></i> الكل
@@ -106,10 +104,10 @@
         <p>جاري جلب أحدث الألعاب والمودات...</p>
       </div>
 
-      <!-- شبكة عرض البطاقات -->
+      <!-- شبكة العرض -->
       <div class="mods-grid" id="modsGrid"></div>
 
-      <!-- تنبيه عدم وجود نتائج -->
+      <!-- تنبيه عند عدم وجود نتائج -->
       <div id="noResults" class="no-results" style="display: none;">
         <i class="fa-regular fa-face-frown"></i>
         <h3>لا توجد عناصر مطابقة لبحثك</h3>
@@ -126,19 +124,16 @@
       
       <h3 style="color:#fff; margin: 20px 0 8px;"><i class="fa-solid fa-globe highlight"></i> تابعنا وتواصل معنا مباشرة:</h3>
       <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-        <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+        <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" class="btn btn-secondary">
           <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> قناة التيليجرام
         </a>
-        <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+        <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" class="btn btn-secondary">
           <i class="fa-brands fa-youtube" style="color: #ff0000;"></i> قناة اليوتيوب
         </a>
-        <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+        <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" class="btn btn-secondary">
           <i class="fa-brands fa-facebook" style="color: #1877f2;"></i> صفحة الفيسبوك
         </a>
       </div>
-
-      <h3 style="color:#fff; margin: 15px 0 5px;"><i class="fa-solid fa-shield-halved highlight"></i> معايير الجودة والأمان:</h3>
-      <p>يتم فحص وتجربة كافة الملفات والروابط لضمان خلوها تماماً من أي برمجيات ضارة والتأكد من تشغيلها بسلاسة على كافة أنواع المعالجات (Mali, Adreno, PowerVR).</p>
     </div>
     <button class="btn btn-secondary" style="margin-top: 20px;" onclick="switchView('home')">العودة للرئيسية</button>
   </section>
@@ -146,17 +141,6 @@
   <!-- صفحة اتصل بنا -->
   <section id="viewContact" class="container page-card" style="display: none; margin: 40px auto;">
     <h2 class="section-title"><i class="fa-solid fa-envelope highlight"></i> اتصل بنا</h2>
-    <p style="color: var(--text-gray); margin-bottom: 15px;">هل لديك طلب للعبة معينة، اقتراح، أو واجهت مشكلة؟ راسلنا فوراً أو انضم إلى مجتمعاتنا الرسمية:</p>
-
-    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-      <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
-        <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> تواصل عبر تلغرام
-      </a>
-      <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
-        <i class="fa-brands fa-facebook" style="color: #1877f2;"></i> راسلنا على فيسبوك
-      </a>
-    </div>
-
     <form class="contact-form" onsubmit="handlePublicContact(event)">
       <div class="form-group">
         <label>الاسم</label>
@@ -167,17 +151,17 @@
         <input type="email" id="contactEmail" required placeholder="name@example.com">
       </div>
       <div class="form-group">
-        <label>الرسالة أو اسم اللعبة المطلوبة</label>
-        <textarea id="contactMsg" rows="5" required placeholder="اكتب استفسارك أو طلبك هنا بالتفصيل..."></textarea>
+        <label>الرسالة</label>
+        <textarea id="contactMsg" rows="5" required placeholder="اكتب طلبك أو استفسارك هنا..."></textarea>
       </div>
-      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال الرسالة</button>
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
     </form>
     <div id="contactSuccess" class="alert-success" style="display: none; margin-top: 15px;">
-      تم استلام رسالتك بنجاح! سنقوم بمراجعتها والرد عليك في أقرب وقت.
+      تم استلام رسالتك بنجاح! شكراً لتواصلك.
     </div>
   </section>
 
-  <!-- نافذة التفاصيل والتحميل المنبثقة الشاملة -->
+  <!-- نافذة التفاصيل والتحميل المنبثقة -->
   <div class="modal-backdrop" id="modModal" onclick="handleBackdropClick(event)">
     <div class="modal-dialog">
       <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -196,7 +180,7 @@
           <img id="modalImg" src="" alt="صورة المعاينة" class="modal-img">
         </div>
 
-        <!-- نظام تقييم النجوم التفاعلي -->
+        <!-- التقييم بالنجوم -->
         <div class="rating-section">
           <div>
             <strong>التقييم: </strong>
@@ -212,7 +196,7 @@
           </div>
         </div>
 
-        <!-- جدول المواصفات الفنية ومتطلبات التشغيل -->
+        <!-- المواصفات -->
         <div class="specs-grid">
           <div class="spec-card">
             <span class="spec-title"><i class="fa-solid fa-file-zipper highlight"></i> الحجم</span>
@@ -223,7 +207,7 @@
             <span class="spec-val" id="modalVersion">Android 5.0+</span>
           </div>
           <div class="spec-card">
-            <span class="spec-title"><i class="fa-solid fa-memory highlight"></i> الرام الأدنى</span>
+            <span class="spec-title"><i class="fa-solid fa-memory highlight"></i> الرام</span>
             <span class="spec-val" id="modalRam">2 GB</span>
           </div>
           <div class="spec-card">
@@ -240,19 +224,27 @@
           </div>
         </div>
 
-        <!-- الوصف وطريقة التركيب -->
+        <!-- الوصف -->
         <div style="margin-bottom: 16px;">
           <h4 style="margin-bottom: 6px;"><i class="fa-solid fa-align-right highlight"></i> الوصف ومميزات الملف:</h4>
           <p id="modalDesc" style="color: var(--text-gray); white-space: pre-line;"></p>
         </div>
 
-        <!-- أزرار التحميل المباشرة الفورية بدون تعليق -->
-        <div id="downloadActionBox">
-          <a href="#" id="modalDirectDownloadBtn" target="_blank" rel="noopener noreferrer" class="btn btn-download-big" onclick="handleDownloadClick(event)">
+        <!-- شاشة العداد التنازلي 7 ثوانٍ -->
+        <div class="timer-box" id="timerBox">
+          <i class="fa-solid fa-hourglass-half fa-spin highlight" style="font-size: 1.8rem;"></i>
+          <p style="margin: 8px 0 4px; font-weight: 600;">جاري تجهيز وفحص رابط التحميل الآمن...</p>
+          <div class="timer-countdown" id="timerCount">7</div>
+          <small style="color: var(--text-gray);">يرجى الانتظار ثوانٍ معدودة لتحميل الملف</small>
+        </div>
+
+        <!-- منطقة ظهور أزرار التحميل بعد انتهاء العداد -->
+        <div id="downloadButtonsBox" style="display: none;">
+          <a href="#" id="modalDirectDownloadBtn" target="_blank" rel="noopener noreferrer" class="btn-download-big" onclick="handleDownloadClick(event)">
             <i class="fa-solid fa-cloud-arrow-down"></i> اضغط هنا لتحميل اللعبة الآن
           </a>
 
-          <!-- سيرفرات بديلة تظهر إذا وجدت -->
+          <!-- سيرفرات بديلة إن وجدت -->
           <div class="mirrors-group" id="mirrorsGroup" style="display: none; margin-top: 10px;">
             <a href="#" id="driveDownloadLink" target="_blank" rel="noopener noreferrer" class="btn-mirror" style="display: none;">
               <span><i class="fa-brands fa-google-drive highlight"></i> سيرفر بديل (Google Drive)</span>
@@ -287,7 +279,7 @@
     </div>
   </div>
 
-  <!-- التذييل الرسمي بروابط حساباتك الحقيقية -->
+  <!-- التذييل الرسمي بروابط حساباتك الحقيقية التي تفتح بنقرة واحدة -->
   <footer class="footer">
     <div class="container footer-content">
       <div class="footer-brand">
@@ -304,14 +296,14 @@
       <div class="footer-social">
         <h4>مجتمع Gaming Omar</h4>
         <div class="social-icons">
-          <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" title="قناة يوتيوب الرسمية">
+          <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="قناة يوتيوب الرسمية">
             <i class="fa-brands fa-youtube"></i>
           </a>
-          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" title="قناة التيليجرام الرسمية">
+          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="قناة التيليجرام الرسمية">
             <i class="fa-brands fa-telegram"></i>
           </a>
-          <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" title="صفحة الفيسبوك الرسمية">
-            <i class="fa-brands fa-facebook"></i>
+          <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank'); return false;" title="صفحة الفيسبوك الرسمية">
+            <i class="fa-brands fa-facebook-f"></i>
           </a>
         </div>
       </div>

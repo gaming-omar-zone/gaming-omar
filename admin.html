@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة الإدارة | Gaming Omar</title>
+  <title>لوحة الإدارة | Gaming Omar - إدارة الألعاب والمودات</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,14 +66,14 @@
           <i class="fa-solid fa-boxes-stacked stat-icon"></i>
           <div>
             <h3 id="statTotalMods">0</h3>
-            <span style="color: var(--text-gray);">إجمالي المودات</span>
+            <span style="color: var(--text-gray);">إجمالي الألعاب والمودات</span>
           </div>
         </div>
         <div class="stat-card">
           <i class="fa-solid fa-cloud-arrow-down stat-icon highlight"></i>
           <div>
             <h3 id="statTotalDownloads">0</h3>
-            <span style="color: var(--text-gray);">إجمالي التحميلات</span>
+            <span style="color: var(--text-gray);">إجمالي التنزيلات</span>
           </div>
         </div>
         <div class="stat-card">
@@ -87,16 +87,16 @@
 
       <!-- تبويبات -->
       <div class="admin-tabs">
-        <button class="tab-btn active" onclick="switchAdminTab('modsTab')"><i class="fa-solid fa-wrench"></i> إدارة المودات</button>
-        <button class="tab-btn" onclick="switchAdminTab('categoriesTab')"><i class="fa-solid fa-folder-tree"></i> إدارة الأقسام</button>
+        <button class="tab-btn active" onclick="switchAdminTab('modsTab')"><i class="fa-solid fa-gamepad"></i> إدارة الألعاب والمودات</button>
+        <button class="tab-btn" onclick="switchAdminTab('categoriesTab')"><i class="fa-solid fa-folder-tree"></i> إدارة التصنيفات</button>
         <button class="tab-btn" onclick="switchAdminTab('settingsTab')"><i class="fa-solid fa-sliders"></i> البانر والإعدادات</button>
       </div>
 
-      <!-- تبويب المودات -->
+      <!-- تبويب الألعاب والمودات -->
       <div id="modsTab" class="admin-tab-content active">
         <div class="tab-header">
-          <h3>قائمة المودات المرفوعة</h3>
-          <button class="btn btn-primary" onclick="openModFormModal()"><i class="fa-solid fa-plus"></i> إضافة مود جديد</button>
+          <h3>قائمة الألعاب والمودات المرفوعة</h3>
+          <button class="btn btn-primary" onclick="openModFormModal()"><i class="fa-solid fa-plus"></i> إضافة لعبة أو مود جديد</button>
         </div>
 
         <div class="table-responsive">
@@ -105,7 +105,7 @@
               <tr>
                 <th>الصورة</th>
                 <th>العنوان</th>
-                <th>القسم</th>
+                <th>التصنيف</th>
                 <th>الحجم</th>
                 <th>التحميلات</th>
                 <th>الإجراءات</th>
@@ -116,17 +116,17 @@
         </div>
       </div>
 
-      <!-- تبويب الأقسام -->
+      <!-- تبويب التصنيفات -->
       <div id="categoriesTab" class="admin-tab-content">
         <div class="tab-header">
-          <h3>أقسام الموقع</h3>
+          <h3>تصنيفات الموقع (ألعاب + مودات)</h3>
           <button class="btn btn-primary" onclick="promptAddCategory()"><i class="fa-solid fa-plus"></i> قسم جديد</button>
         </div>
         <div class="table-responsive">
           <table class="data-table">
             <thead>
               <tr>
-                <th>اسم القسم</th>
+                <th>اسم التصنيف</th>
                 <th>المعرف (Slug)</th>
                 <th>الأيقونة</th>
                 <th>الإجراءات</th>
@@ -140,14 +140,14 @@
       <!-- تبويب الإعدادات -->
       <div id="settingsTab" class="admin-tab-content">
         <div class="page-card">
-          <h3>تعديل محتوى البانر الرئيسي (Hero)</h3>
+          <h3>تعديل محتوى البانر الرئيسي للموقع</h3>
           <form onsubmit="handleSaveSettings(event)" class="contact-form">
             <div class="form-group">
               <label>الشارة العلوية (Badge)</label>
               <input type="text" id="settingBadge" required>
             </div>
             <div class="form-group">
-              <label>العنوان الرئيسي الكبير</label>
+              <label>العنوان الرئيسي للموقع</label>
               <input type="text" id="settingTitle" required>
             </div>
             <div class="form-group">
@@ -161,77 +161,77 @@
     </div>
   </div>
 
-  <!-- مودال إضافة وتعديل المود -->
+  <!-- مودال إضافة وتعديل لعبة / مود -->
   <div class="modal-backdrop" id="modFormModal">
     <div class="modal-dialog">
       <button class="modal-close" onclick="closeModFormModal()">&times;</button>
       <div class="modal-header">
-        <h2 id="modFormTitle">إضافة مود جديد</h2>
+        <h2 id="modFormTitle">إضافة لعبة / مود جديد</h2>
       </div>
       <form id="modForm" onsubmit="handleSaveMod(event)" class="contact-form">
         <input type="hidden" id="editModId">
         
         <div class="form-group">
-          <label>عنوان المود</label>
-          <input type="text" id="formModTitle" required placeholder="مثال: حزمة سيارات واقعية">
+          <label>اسم اللعبة أو المود</label>
+          <input type="text" id="formModTitle" required placeholder="مثال: لعبة eFootball 2026 مهكرة أو مود سيارة نيسان GTR">
         </div>
 
         <div class="form-group">
-          <label>القسم</label>
+          <label>التصنيف</label>
           <select id="formModCategory" required></select>
         </div>
 
         <div class="form-group">
-          <label>وصف قصير</label>
-          <input type="text" id="formModShortDesc" required placeholder="وصف سريع من سطر واحد">
+          <label>وصف قصير (يظهر في البطاقة للزائر)</label>
+          <input type="text" id="formModShortDesc" required placeholder="مثال: أموال غير محدودة، جرافيكس عالي، بدون إنترنت">
         </div>
 
         <div class="form-group">
-          <label>الوصف وطريقة التركيب</label>
-          <textarea id="formModFullDesc" rows="4" required></textarea>
+          <label>الوصف الشامل ومميزات اللعبة / طريقة التركيب</label>
+          <textarea id="formModFullDesc" rows="4" required placeholder="اكتب هنا تفاصيل اللعبة، مميزات التهكير، وطريقة نقل ملفات OBB أو Data إن وجدت..."></textarea>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>حجم الملف (مثال: 45 MB)</label>
+            <label>حجم الملف (مثال: 95 MB أو 1.2 GB)</label>
             <input type="text" id="formModSize" required>
           </div>
           <div class="form-group">
-            <label>الإصدار</label>
-            <input type="text" id="formModVersion" value="GTA SA v2.00+" required>
+            <label>إصدار الأندرويد المطلوب أو اللعبة</label>
+            <input type="text" id="formModVersion" value="Android 6.0+" required placeholder="مثال: Android 7.0+ أو GTA SA v2.10">
           </div>
         </div>
 
         <div class="form-group">
-          <label>صورة المود (رفع ملف من الهاتف أو رابط مباشر)</label>
+          <label>بوستر / صورة اللعبة (رفع صورة أو رابط مباشر)</label>
           <input type="file" id="formModImgFile" accept="image/*">
-          <input type="url" id="formModImgUrl" placeholder="أو ضع رابط صورة خارجي">
+          <input type="url" id="formModImgUrl" placeholder="أو ضع رابط صورة مباشر">
         </div>
 
         <div class="form-group">
-          <label>طريقة التنزيل</label>
+          <label>طريقة توفير رابط التحميل</label>
           <select id="formDownloadType" onchange="toggleDownloadFields()">
-            <option value="external">رابط خارجي (MediaFire / Google Drive)</option>
-            <option value="storage">رفع ملف التعديل مباشرة إلى السيرفر (ZIP, RAR, APK)</option>
+            <option value="external">رابط خارجي مباشر (MediaFire / Google Drive / Mega)</option>
+            <option value="storage">رفع ملف التطبيق/المود مباشرة إلى السيرفر (APK / ZIP / RAR)</option>
           </select>
         </div>
 
         <div class="form-group" id="externalLinkGroup">
-          <label>رابط التحميل المباشر</label>
+          <label>رابط التحميل المباشر (ميديافاير، ميجا، أو درايف)</label>
           <input type="url" id="formExternalUrl" placeholder="https://www.mediafire.com/file/...">
         </div>
 
         <div class="form-group" id="storageUploadGroup" style="display: none;">
-          <label>اختر ملف المود (ZIP, RAR, APK)</label>
-          <input type="file" id="formModBinaryFile" accept=".zip,.rar,.7z,.apk">
+          <label>اختر ملف اللعبة (APK أو ZIP أو RAR)</label>
+          <input type="file" id="formModBinaryFile" accept=".apk,.zip,.rar,.7z,.xapk">
         </div>
 
         <div id="uploadProgress" style="display:none; color: var(--primary-red); font-weight: bold; margin: 10px 0;">
-          <i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الملفات إلى السيرفر... يرجى الانتظار
+          <i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الملف إلى السيرفر... يرجى الانتظار
         </div>
 
         <button type="submit" class="btn btn-primary btn-block" id="saveModBtn">
-          <i class="fa-solid fa-check"></i> حفظ ونشر المود
+          <i class="fa-solid fa-check"></i> حفظ ونشر على الموقع فوراً
         </button>
       </form>
     </div>

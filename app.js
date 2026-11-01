@@ -1,5 +1,5 @@
 // ========================================================
-// Gaming Omar - Public Site Logic (ربط جميع الأزرار والتحميل المباشر)
+// Gaming Omar - Public Site Logic (كود مصلح وموثوق 100%)
 // ========================================================
 
 let allMods = [];
@@ -127,37 +127,41 @@ async function loadSettings() {
 }
 
 async function loadCategories() {
-    const { data: categories, error } = await window.supabaseClient
-        .from('categories')
-        .select('*')
-        .order('created_at', { ascending: true });
+    try {
+        const { data: categories, error } = await window.supabaseClient
+            .from('categories')
+            .select('*')
+            .order('created_at', { ascending: true });
 
-    if (error || !categories) return;
-    allCategories = categories;
+        if (error || !categories) return;
+        allCategories = categories;
 
-    const categoriesBar = document.getElementById('categoriesBar');
-    const footerCats = document.getElementById('footerCats');
+        const categoriesBar = document.getElementById('categoriesBar');
+        const footerCats = document.getElementById('footerCats');
 
-    categories.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'filter-btn';
-        btn.setAttribute('data-category', cat.id);
-        btn.innerHTML = `<i class="fa-solid ${cat.icon || 'fa-folder'}"></i> ${cat.name}`;
-        btn.onclick = () => filterByCategory(cat.id, btn);
-        if (categoriesBar) categoriesBar.appendChild(btn);
+        categories.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'filter-btn';
+            btn.setAttribute('data-category', cat.id);
+            btn.innerHTML = `<i class="fa-solid ${cat.icon || 'fa-folder'}"></i> ${cat.name}`;
+            btn.onclick = () => filterByCategory(cat.id, btn);
+            if (categoriesBar) categoriesBar.appendChild(btn);
 
-        if (footerCats) {
-            const li = document.createElement('li');
-            li.innerHTML = `<a href="#mods" onclick="filterByCategory('${cat.id}')">${cat.name}</a>`;
-            footerCats.appendChild(li);
+            if (footerCats) {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="#mods" onclick="filterByCategory('${cat.id}')">${cat.name}</a>`;
+                footerCats.appendChild(li);
+            }
+        });
+
+        const allBtn = document.querySelector('.filter-btn[data-category="all"]');
+        if (allBtn) {
+            allBtn.onclick = function() {
+                filterByCategory('all', this);
+            };
         }
-    });
-
-    const allBtn = document.querySelector('.filter-btn[data-category="all"]');
-    if (allBtn) {
-        allBtn.onclick = function() {
-            filterByCategory('all', this);
-        };
+    } catch (e) {
+        console.error("Categories error:", e);
     }
 }
 
@@ -165,21 +169,26 @@ async function loadMods() {
     const loading = document.getElementById('loadingIndicator');
     if (loading) loading.style.display = 'block';
 
-    const { data: mods, error } = await window.supabaseClient
-        .from('mods')
-        .select('*, categories(name)')
-        .eq('is_published', true)
-        .order('created_at', { ascending: false });
+    try {
+        const { data: mods, error } = await window.supabaseClient
+            .from('mods')
+            .select('*, categories(name)')
+            .eq('is_published', true)
+            .order('created_at', { ascending: false });
 
-    if (loading) loading.style.display = 'none';
+        if (loading) loading.style.display = 'none';
 
-    if (error) {
-        console.error("Mods error:", error);
-        return;
+        if (error) {
+            console.error("Mods load error:", error);
+            return;
+        }
+
+        allMods = mods || [];
+        renderModsGrid(applyCurrentFilters());
+    } catch (err) {
+        if (loading) loading.style.display = 'none';
+        console.error("Error loading mods:", err);
     }
-
-    allMods = mods || [];
-    renderModsGrid(applyCurrentFilters());
 }
 
 function applyCurrentFilters() {
@@ -266,21 +275,33 @@ function setupSearch() {
     }
 }
 
+// 3. تحويل جميع أنواع روابط يوتيوب (العادية، المختصرة، والـ Shorts) إلى مشغل
 function getYouTubeEmbedUrl(url) {
     if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? `https://www.youtube.com/embed/${match[2]}` : null;
+    const cleanUrl = url.trim();
+    let videoId = null;
+
+    if (cleanUrl.includes('youtu.be/')) {
+        videoId = cleanUrl.split('youtu.be/')[1].split('?')[0].split('&')[0];
+    } else if (cleanUrl.includes('youtube.com/shorts/')) {
+        videoId = cleanUrl.split('youtube.com/shorts/')[1].split('?')[0].split('&')[0];
+    } else if (cleanUrl.includes('watch?v=')) {
+        videoId = cleanUrl.split('watch?v=')[1].split('&')[0];
+    } else if (cleanUrl.includes('embed/')) {
+        videoId = cleanUrl.split('embed/')[1].split('?')[0];
+    }
+
+    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0` : null;
 }
 
-// 3. فتح تفاصيل اللعبة وتجهيز روابط التحميل
+// 4. فتح تفاصيل اللعبة وتجهيز الروابط
 window.openDetails = async function(modId) {
     const mod = allMods.find(m => m.id === modId);
     if (!mod) return;
     activeMod = mod;
 
-    document.getElementById('modalTitle').textContent = mod.title;
-    document.getElementById('modalBadge').textContent = mod.categories ? mod.categories.name : 'لعبة أندرويد';
+    document.getElementById('modalTitle').textContent = mod.title || 'لعبة أندرويد';
+    document.getElementById('modalBadge').textContent = mod.categories ? mod.categories.name : 'ألعاب أندرويد';
     
     // وضع اللعب
     const modeTag = document.getElementById('modalModeTag');
@@ -298,7 +319,7 @@ window.openDetails = async function(modId) {
         document.getElementById('modalModeVal').textContent = 'بدون نت';
     }
 
-    // المعاينة (فيديو أو صورة)
+    // المعاينة
     const mediaBox = document.getElementById('modalMediaContainer');
     const embedUrl = getYouTubeEmbedUrl(mod.youtube_url);
     if (embedUrl) {
@@ -314,14 +335,14 @@ window.openDetails = async function(modId) {
     // المواصفات
     document.getElementById('modalRatingScore').textContent = mod.rating_avg || 5.0;
     document.getElementById('modalRatingVotes').textContent = mod.rating_count || 1;
-    document.getElementById('modalSize').textContent = mod.file_size;
+    document.getElementById('modalSize').textContent = mod.file_size || 'غير محدد';
     document.getElementById('modalVersion').textContent = mod.game_version || 'Android 5.0+';
     document.getElementById('modalRam').textContent = mod.ram_req || '2 GB';
     document.getElementById('modalGpu').textContent = mod.gpu_compat || 'جميع المعالجات';
-    document.getElementById('modalDownloads').textContent = mod.download_count;
-    document.getElementById('modalDesc').textContent = mod.description;
+    document.getElementById('modalDownloads').textContent = mod.download_count || 0;
+    document.getElementById('modalDesc').textContent = mod.description || '';
 
-    // تجهيز رابط التحميل الأساسي المباشر
+    // تجهيز رابط التحميل المباشر
     const primaryUrl = mod.download_type === 'storage' ? mod.file_url : mod.external_url;
     const directBtn = document.getElementById('modalDirectDownloadBtn');
     if (directBtn) {
@@ -334,16 +355,16 @@ window.openDetails = async function(modId) {
     const megaBtn = document.getElementById('megaDownloadLink');
     let hasMirrors = false;
 
-    if (mod.link_drive) {
-        driveBtn.href = mod.link_drive;
+    if (mod.link_drive && mod.link_drive.trim().length > 5) {
+        driveBtn.href = mod.link_drive.trim();
         driveBtn.style.display = 'flex';
         hasMirrors = true;
     } else {
         driveBtn.style.display = 'none';
     }
 
-    if (mod.link_mega) {
-        megaBtn.href = mod.link_mega;
+    if (mod.link_mega && mod.link_mega.trim().length > 5) {
+        megaBtn.href = mod.link_mega.trim();
         megaBtn.style.display = 'flex';
         hasMirrors = true;
     } else {
@@ -373,20 +394,28 @@ window.handleBackdropClick = function(e) {
     if (e.target.id === 'modModal') closeModal();
 };
 
-// 4. نقرة التحميل وزيادة العداد تلقائياً
-window.handleDownloadClick = async function() {
+// 5. التحميل المباشر دون أي توقف
+window.handleDownloadClick = async function(e) {
     if (!activeMod) return;
+    const primaryUrl = activeMod.download_type === 'storage' ? activeMod.file_url : activeMod.external_url;
+    
+    if (!primaryUrl || primaryUrl === '#') {
+        if (e) e.preventDefault();
+        alert("عذراً، لم يقم الأدمن بإضافة رابط تحميل لهذا الملف بعد!");
+        return;
+    }
+
     try {
         await window.supabaseClient.rpc('increment_mod_download', { target_mod_id: activeMod.id });
         activeMod.download_count = (activeMod.download_count || 0) + 1;
         const dlSpan = document.getElementById('modalDownloads');
         if (dlSpan) dlSpan.textContent = activeMod.download_count;
-    } catch (e) {
-        console.error("Increment error:", e);
+    } catch (err) {
+        console.error("Increment error:", err);
     }
 };
 
-// 5. الإبلاغ عن رابط معطل
+// 6. الإبلاغ عن رابط معطل
 window.reportCurrentMod = async function() {
     if (!activeMod) return;
     if (confirm("هل تريد الإبلاغ عن أن رابط تحميل هذا الملف لا يعمل؟")) {
@@ -405,7 +434,7 @@ window.reportCurrentMod = async function() {
     }
 };
 
-// 6. نظام تقييم النجوم
+// 7. نظام تقييم النجوم
 function setupInteractiveStars() {
     const stars = document.querySelectorAll('#starsRatingBox i');
     stars.forEach(star => {
@@ -430,7 +459,7 @@ function setupInteractiveStars() {
     });
 }
 
-// 7. نظام التعليقات
+// 8. نظام التعليقات
 async function loadComments(modId) {
     const list = document.getElementById('commentsList');
     const countSpan = document.getElementById('commentsCount');

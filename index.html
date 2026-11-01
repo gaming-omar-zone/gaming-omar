@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
   <title>Gaming Omar | تحميل ألعاب أندرويد مهكرة ومودات GTA SA الأصلية</title>
-  <meta name="description" content="موقع Gaming Omar لتحميل أحدث ألعاب الأندرويد المهكرة (Mod APK) والأوفلاين، وأقوى مودات GTA San Andreas Android بروابط مباشرة.">
-  <meta name="keywords" content="العاب اندرويد, مودات gta sa للاندرويد, apk مهكر, gta san andreas mods android">
-  <meta property="og:title" content="Gaming Omar | ألعاب أندرويد ومودات GTA SA">
+  <meta name="description" content="موقع Gaming Omar الرسمي لتحميل أحدث ألعاب الأندرويد المهكرة والأوفلاين، وأقوى مودات GTA San Andreas بروابط مباشرة ومفحوصة 100%.">
+  <meta name="keywords" content="العاب اندرويد مهكرة, مودات gta sa, تحميل gta san andreas للاندرويد, apk mod, Gaming Omar">
+  <meta property="og:title" content="Gaming Omar | منصة ألعاب الأندرويد ومودات GTA SA">
+  <meta property="og:description" content="حمل أحدث ألعاب وتعديلات الأندرويد بروابط سريعة ومباشرة من مجتمع Gaming Omar.">
+  <meta property="og:type" content="website">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +21,8 @@
 </head>
 <body>
 
-  <!-- زر التيليجرام العائم -->
-  <a href="https://t.me/" target="_blank" class="floating-community-btn" title="انضم لقناتنا على التيليجرام">
+  <!-- زر التيليجرام العائم المباشر لقناتك -->
+  <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="floating-community-btn" title="انضم لقناتنا الرسمية على التيليجرام">
     <i class="fa-brands fa-telegram"></i>
   </a>
 
@@ -56,36 +58,39 @@
         <p class="hero-desc" id="heroSubtitle">وجهتك الأولى لتحميل أحدث ألعاب الأندرويد المهكرة والكاملة، بالإضافة إلى أقوى مودات وتعديلات GTA San Andreas بروابط مباشرة وسريعة.</p>
         <div class="hero-actions">
           <button class="btn btn-primary" onclick="switchView('mods')">
-            <i class="fa-solid fa-download"></i> تصفح وتحميل الآن
+            <i class="fa-solid fa-download"></i> تصفح وتحميل الألعاب
           </button>
           <button class="btn btn-secondary" onclick="showFavoritesOnly()">
             <i class="fa-solid fa-heart" style="color:#ff4757;"></i> المفضلة (<span id="favCount">0</span>)
           </button>
+          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="background: rgba(0, 136, 204, 0.2); border-color: #0088cc;">
+            <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> قناتنا تلغرام
+          </a>
         </div>
       </div>
     </section>
 
-    <!-- مساحة إعلانية -->
+    <!-- مساحة إعلانية جاهزة -->
     <div class="container">
       <div class="ad-slot">
-        <i class="fa-solid fa-rectangle-ad"></i> مساحة إعلانية - مجهزة لوضع شفرة AdSense أو أي شبكة إعلانية
+        <i class="fa-solid fa-rectangle-ad"></i> مساحة إعلانية - يمكنك وضع كود الإعلانات أو شفرة AdSense هنا
       </div>
     </div>
 
-    <!-- قسم الألعاب والمودات -->
+    <!-- قسم الألعاب والمودات والبحث -->
     <section class="container mods-section" id="mods">
       <div class="section-header">
         <h2 class="section-title"><i class="fa-solid fa-cubes highlight"></i> مكتبة الألعاب والتعديلات</h2>
         <p class="section-subtitle">اختر التصنيف المفضل لديك أو استخدم محرك البحث المباشر</p>
       </div>
 
-      <!-- محرك البحث -->
+      <!-- محرك البحث السريع -->
       <div class="search-box">
         <i class="fa-solid fa-magnifying-glass search-icon"></i>
         <input type="text" id="searchInput" placeholder="ابحث باسم اللعبة، ملف APK، نوع السيارة أو المود...">
       </div>
 
-      <!-- التصنيفات -->
+      <!-- أزرار التصنيفات + المفضلة -->
       <div class="categories-filter" id="categoriesBar">
         <button class="filter-btn active" data-category="all">
           <i class="fa-solid fa-border-all"></i> الكل
@@ -101,10 +106,10 @@
         <p>جاري جلب أحدث الألعاب والمودات...</p>
       </div>
 
-      <!-- شبكة العرض -->
+      <!-- شبكة عرض البطاقات -->
       <div class="mods-grid" id="modsGrid"></div>
 
-      <!-- تنبيه عند عدم وجود نتائج -->
+      <!-- تنبيه عدم وجود نتائج -->
       <div id="noResults" class="no-results" style="display: none;">
         <i class="fa-regular fa-face-frown"></i>
         <h3>لا توجد عناصر مطابقة لبحثك</h3>
@@ -117,9 +122,23 @@
   <section id="viewAbout" class="container page-card" style="display: none; margin: 40px auto;">
     <h2 class="section-title"><i class="fa-solid fa-circle-info highlight"></i> عن Gaming Omar</h2>
     <div style="margin-top: 15px; color: var(--text-gray);">
-      <p>مرحباً بكم في <strong>Gaming Omar</strong>، بوابتكم المتكاملة لكل ما يخص ألعاب هواتف الأندرويد وتعديلات لعبة Grand Theft Auto San Andreas.</p>
-      <h3 style="color:#fff; margin: 15px 0 5px;"><i class="fa-solid fa-bullseye highlight"></i> أهدافنا</h3>
-      <p>نعمل على توفير ألعاب كاملة ومحدثة (APK + OBB) بروابط تحميل آمنة ومباشرة، مع تقديم شروحات دقيقة لكيفية التثبيت وتشغيل المودات بسلاسة وبدون لاج على جميع معالجات الهواتف.</p>
+      <p>مرحباً بكم في <strong>Gaming Omar</strong>، المنصة العربية المتخصصة في نشر أحدث ألعاب الأندرويد المهكرة والكاملة، بالإضافة إلى أفضل مودات GTA San Andreas للأندرويد بروابط مباشرة وسريعة.</p>
+      
+      <h3 style="color:#fff; margin: 20px 0 8px;"><i class="fa-solid fa-globe highlight"></i> تابعنا وتواصل معنا مباشرة:</h3>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+        <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> قناة التيليجرام
+        </a>
+        <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <i class="fa-brands fa-youtube" style="color: #ff0000;"></i> قناة اليوتيوب
+        </a>
+        <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <i class="fa-brands fa-facebook" style="color: #1877f2;"></i> صفحة الفيسبوك
+        </a>
+      </div>
+
+      <h3 style="color:#fff; margin: 15px 0 5px;"><i class="fa-solid fa-shield-halved highlight"></i> معايير الجودة والأمان:</h3>
+      <p>يتم فحص وتجربة كافة الملفات والروابط لضمان خلوها تماماً من أي برمجيات ضارة والتأكد من تشغيلها بسلاسة على كافة أنواع المعالجات (Mali, Adreno, PowerVR).</p>
     </div>
     <button class="btn btn-secondary" style="margin-top: 20px;" onclick="switchView('home')">العودة للرئيسية</button>
   </section>
@@ -127,23 +146,34 @@
   <!-- صفحة اتصل بنا -->
   <section id="viewContact" class="container page-card" style="display: none; margin: 40px auto;">
     <h2 class="section-title"><i class="fa-solid fa-envelope highlight"></i> اتصل بنا</h2>
+    <p style="color: var(--text-gray); margin-bottom: 15px;">هل لديك طلب للعبة معينة، اقتراح، أو واجهت مشكلة؟ راسلنا فوراً أو انضم إلى مجتمعاتنا الرسمية:</p>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
+      <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+        <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> تواصل عبر تلغرام
+      </a>
+      <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">
+        <i class="fa-brands fa-facebook" style="color: #1877f2;"></i> راسلنا على فيسبوك
+      </a>
+    </div>
+
     <form class="contact-form" onsubmit="handlePublicContact(event)">
       <div class="form-group">
         <label>الاسم</label>
-        <input type="text" id="contactName" required placeholder="أدخل اسمك">
+        <input type="text" id="contactName" required placeholder="أدخل اسمك الكريم">
       </div>
       <div class="form-group">
         <label>البريد الإلكتروني</label>
         <input type="email" id="contactEmail" required placeholder="name@example.com">
       </div>
       <div class="form-group">
-        <label>الرسالة</label>
-        <textarea id="contactMsg" rows="5" required placeholder="اكتب اسم اللعبة أو استفسارك هنا..."></textarea>
+        <label>الرسالة أو اسم اللعبة المطلوبة</label>
+        <textarea id="contactMsg" rows="5" required placeholder="اكتب استفسارك أو طلبك هنا بالتفصيل..."></textarea>
       </div>
-      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال الرسالة</button>
     </form>
     <div id="contactSuccess" class="alert-success" style="display: none; margin-top: 15px;">
-      تم استلام رسالتك بنجاح! سنقوم بمراجعتها والرد عليك قريباً.
+      تم استلام رسالتك بنجاح! سنقوم بمراجعتها والرد عليك في أقرب وقت.
     </div>
   </section>
 
@@ -216,13 +246,13 @@
           <p id="modalDesc" style="color: var(--text-gray); white-space: pre-line;"></p>
         </div>
 
-        <!-- أزرار التحميل المباشرة الفورية -->
+        <!-- أزرار التحميل المباشرة الفورية بدون تعليق -->
         <div id="downloadActionBox">
-          <a href="#" id="modalDirectDownloadBtn" target="_blank" rel="noopener noreferrer" class="btn btn-download-big" onclick="handleDownloadClick()">
+          <a href="#" id="modalDirectDownloadBtn" target="_blank" rel="noopener noreferrer" class="btn btn-download-big" onclick="handleDownloadClick(event)">
             <i class="fa-solid fa-cloud-arrow-down"></i> اضغط هنا لتحميل اللعبة الآن
           </a>
 
-          <!-- سيرفرات بديلة تظهر إذا وجدت روابط إضافية -->
+          <!-- سيرفرات بديلة تظهر إذا وجدت -->
           <div class="mirrors-group" id="mirrorsGroup" style="display: none; margin-top: 10px;">
             <a href="#" id="driveDownloadLink" target="_blank" rel="noopener noreferrer" class="btn-mirror" style="display: none;">
               <span><i class="fa-brands fa-google-drive highlight"></i> سيرفر بديل (Google Drive)</span>
@@ -257,7 +287,7 @@
     </div>
   </div>
 
-  <!-- التذييل -->
+  <!-- التذييل الرسمي بروابط حساباتك الحقيقية -->
   <footer class="footer">
     <div class="container footer-content">
       <div class="footer-brand">
@@ -265,7 +295,7 @@
           <i class="fa-solid fa-gamepad logo-icon"></i>
           <span>Gaming <span class="highlight">Omar</span></span>
         </div>
-        <p>موقعك الموثوق لتحميل أحدث ألعاب الأندرويد المهكرة ومودات GTA SA الأصلية بروابط مباشرة.</p>
+        <p>موقعك العربي الموثوق لتحميل أحدث ألعاب الأندرويد المهكرة ومودات GTA SA الأصلية بروابط مباشرة وسريعة.</p>
       </div>
       <div class="footer-links">
         <h4>الأقسام الرئيسية</h4>
@@ -274,9 +304,15 @@
       <div class="footer-social">
         <h4>مجتمع Gaming Omar</h4>
         <div class="social-icons">
-          <a href="#"><i class="fa-brands fa-youtube"></i></a>
-          <a href="#"><i class="fa-brands fa-telegram"></i></a>
-          <a href="#"><i class="fa-brands fa-facebook"></i></a>
+          <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" title="قناة يوتيوب الرسمية">
+            <i class="fa-brands fa-youtube"></i>
+          </a>
+          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" title="قناة التيليجرام الرسمية">
+            <i class="fa-brands fa-telegram"></i>
+          </a>
+          <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" title="صفحة الفيسبوك الرسمية">
+            <i class="fa-brands fa-facebook"></i>
+          </a>
         </div>
       </div>
     </div>

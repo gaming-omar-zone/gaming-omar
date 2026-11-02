@@ -1,5 +1,5 @@
 // ========================================================
-// Gaming Omar - Public Site Logic (كود مصلح وموثوق 100%)
+// Gaming Omar - Public Site Logic (عداد الثواني وروابط التحميل)
 // ========================================================
 
 let allMods = [];
@@ -7,6 +7,7 @@ let allCategories = [];
 let selectedCategory = 'all';
 let activeMod = null;
 let showingFavorites = false;
+let countdownTimer = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const yearSpan = document.getElementById('yearSpan');
@@ -53,7 +54,7 @@ function setupMobileNav() {
     }
 }
 
-// 1. نظام المفضلة (Favorites)
+// 1. المفضلة
 function getFavorites() {
     try {
         return JSON.parse(localStorage.getItem('gaming_omar_favs') || '[]');
@@ -109,7 +110,7 @@ window.showFavoritesOnly = function() {
     if (modsSection) modsSection.scrollIntoView({ behavior: 'smooth' });
 };
 
-// 2. جلب البيانات والإعدادات
+// 2. جلب البيانات
 async function loadSettings() {
     try {
         const { data } = await window.supabaseClient.from('site_settings').select('*');
@@ -275,7 +276,6 @@ function setupSearch() {
     }
 }
 
-// 3. تحويل جميع أنواع روابط يوتيوب (العادية، المختصرة، والـ Shorts) إلى مشغل
 function getYouTubeEmbedUrl(url) {
     if (!url) return null;
     const cleanUrl = url.trim();
@@ -294,7 +294,7 @@ function getYouTubeEmbedUrl(url) {
     return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0` : null;
 }
 
-// 4. فتح تفاصيل اللعبة وتجهيز الروابط
+// 3. فتح تفاصيل اللعبة وتشغيل عداد الـ 7 ثوانٍ
 window.openDetails = async function(modId) {
     const mod = allMods.find(m => m.id === modId);
     if (!mod) return;
@@ -375,6 +375,32 @@ window.openDetails = async function(modId) {
         mirrorsBox.style.display = hasMirrors ? 'flex' : 'none';
     }
 
+    // ==========================================
+    // تشغيل العداد التنازلي التلقائي (7 ثوانٍ)
+    // ==========================================
+    const timerBox = document.getElementById('timerBox');
+    const downloadButtonsBox = document.getElementById('downloadButtonsBox');
+    const timerCount = document.getElementById('timerCount');
+
+    if (countdownTimer) clearInterval(countdownTimer);
+
+    timerBox.style.display = 'block';
+    downloadButtonsBox.style.display = 'none';
+
+    let seconds = 7;
+    timerCount.textContent = seconds;
+
+    countdownTimer = setInterval(() => {
+        seconds--;
+        timerCount.textContent = seconds;
+
+        if (seconds <= 0) {
+            clearInterval(countdownTimer);
+            timerBox.style.display = 'none';
+            downloadButtonsBox.style.display = 'block';
+        }
+    }, 1000);
+
     await loadComments(mod.id);
 
     const modal = document.getElementById('modModal');
@@ -383,6 +409,7 @@ window.openDetails = async function(modId) {
 };
 
 window.closeModal = function() {
+    if (countdownTimer) clearInterval(countdownTimer);
     const modal = document.getElementById('modModal');
     if (modal) modal.classList.remove('show');
     document.body.style.overflow = '';
@@ -394,7 +421,7 @@ window.handleBackdropClick = function(e) {
     if (e.target.id === 'modModal') closeModal();
 };
 
-// 5. التحميل المباشر دون أي توقف
+// 4. نقرة التحميل
 window.handleDownloadClick = async function(e) {
     if (!activeMod) return;
     const primaryUrl = activeMod.download_type === 'storage' ? activeMod.file_url : activeMod.external_url;
@@ -415,7 +442,7 @@ window.handleDownloadClick = async function(e) {
     }
 };
 
-// 6. الإبلاغ عن رابط معطل
+// 5. الإبلاغ عن رابط معطل
 window.reportCurrentMod = async function() {
     if (!activeMod) return;
     if (confirm("هل تريد الإبلاغ عن أن رابط تحميل هذا الملف لا يعمل؟")) {
@@ -434,7 +461,7 @@ window.reportCurrentMod = async function() {
     }
 };
 
-// 7. نظام تقييم النجوم
+// 6. تقييم النجوم
 function setupInteractiveStars() {
     const stars = document.querySelectorAll('#starsRatingBox i');
     stars.forEach(star => {
@@ -459,7 +486,7 @@ function setupInteractiveStars() {
     });
 }
 
-// 8. نظام التعليقات
+// 7. التعليقات
 async function loadComments(modId) {
     const list = document.getElementById('commentsList');
     const countSpan = document.getElementById('commentsCount');

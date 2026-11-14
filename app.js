@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCategories();
     await loadMods();
     await loadTrending();
+    await loadGameRequests();
     setupSearch();
     setupInteractiveStars();
 });
@@ -46,10 +47,15 @@ window.switchView = function(viewName) {
     const viewHome = document.getElementById('viewHome');
     const viewAbout = document.getElementById('viewAbout');
     const viewContact = document.getElementById('viewContact');
+    const viewRequests = document.getElementById('viewRequests');
 
     if (viewHome) viewHome.style.display = (viewName === 'home' || viewName === 'mods') ? 'block' : 'none';
     if (viewAbout) viewAbout.style.display = viewName === 'about' ? 'block' : 'none';
     if (viewContact) viewContact.style.display = viewName === 'contact' ? 'block' : 'none';
+    if (viewRequests) {
+        viewRequests.style.display = viewName === 'requests' ? 'block' : 'none';
+        if (viewName === 'requests') loadGameRequests();
+    }
 
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
     const targetLink = document.querySelector(`.nav-link[onclick="switchView('${viewName}')"]`);
@@ -275,6 +281,68 @@ async function loadTrending() {
         console.error('Error loading trending:', e);
     }
 }
+
+// طلبات الألعاب: لائحة عامة + فورم الإرسال
+const REQUEST_STATUS_LABELS = {
+    pending: ['قيد الانتظار', 'badge-draft'],
+    approved: ['تم القبول', 'badge-approved'],
+    done: ['تمت الإضافة ✅', 'badge-published'],
+    rejected: ['مرفوض', 'badge-rejected']
+};
+function requestStatusBadge(status) {
+    const [label, cls] = REQUEST_STATUS_LABELS[status] || REQUEST_STATUS_LABELS.pending;
+    return `<span class="${cls}">${esc(label)}</span>`;
+}
+
+async function loadGameRequests() {
+    const list = document.getElementById('requestsList');
+    if (!list) return;
+    try {
+        const { data, error } = await window.supabaseClient
+            .from('game_requests')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(20);
+        if (error || !data || data.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-gray)">لا توجد طلبات بعد — كن أول من يطلب! 🎮</p>';
+            return;
+        }
+        list.innerHTML = '';
+        data.forEach(r => {
+            const item = document.createElement('div');
+            item.className = 'request-item';
+            item.innerHTML = `
+                <div>
+                    <strong>${esc(r.game_title)}</strong> ${requestStatusBadge(r.status)}
+                    <div style="color:var(--text-gray); font-size:0.85rem; margin-top:4px;">
+                        طلبها ${esc(r.name)} • ${esc(r.game_type)} • ${new Date(r.created_at).toLocaleDateString('ar-EG')}
+                    </div>
+                    ${r.details ? `<div style="color:var(--text-gray); font-size:0.9rem; margin-top:4px;">${esc(r.details)}</div>` : ''}
+                </div>
+            `;
+            list.appendChild(item);
+        });
+    } catch (e) {
+        list.innerHTML = '<p style="color:var(--text-gray)">تعذر جلب الطلبات حالياً.</p>';
+    }
+}
+
+window.handleGameRequest = async function(e) {
+    e.preventDefault();
+    const name = document.getElementById('reqName').value.trim();
+    const gameTitle = document.getElementById('reqGameTitle').value.trim();
+    const gameType = document.getElementById('reqGameType').value;
+    const details = document.getElementById('reqDetails').value.trim();
+    if (name.length < 2 || gameTitle.length < 2) return;
+    const { error } = await window.supabaseClient.from('game_requests').insert([{
+        name, game_title: gameTitle, game_type: gameType, details: details || null
+    }]);
+    if (error) { alert('تعذر إرسال الطلب: ' + error.message); return; }
+    e.target.reset();
+    const ok = document.getElementById('reqSuccess');
+    if (ok) { ok.style.display = 'block'; setTimeout(() => { ok.style.display = 'none'; }, 5000); }
+    loadGameRequests();
+};
 
 function applyCurrentFilters() {
     const searchInput = document.getElementById('searchInput');

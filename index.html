@@ -45,6 +45,7 @@
       <nav class="nav-links" id="navLinks">
         <a href="#home" class="nav-link active" onclick="switchView('home')"><i class="fa-solid fa-house"></i> الرئيسية</a>
         <a href="#mods" class="nav-link" onclick="switchView('mods')"><i class="fa-solid fa-gamepad"></i> الألعاب والمودات</a>
+        <a href="#requests" class="nav-link" onclick="switchView('requests')"><i class="fa-solid fa-clipboard-list"></i> اطلب لعبة</a>
         <a href="#about" class="nav-link" onclick="switchView('about')"><i class="fa-solid fa-circle-info"></i> من نحن</a>
         <a href="#contact" class="nav-link" onclick="switchView('contact')"><i class="fa-solid fa-envelope"></i> اتصل بنا</a>
         <a href="admin.html" class="nav-link admin-btn"><i class="fa-solid fa-lock"></i> لوحة الأدمن</a>
@@ -192,6 +193,42 @@
     <div id="contactSuccess" class="alert-success" style="display: none; margin-top: 15px;">
       تم استلام رسالتك بنجاح! شكراً لتواصلك.
     </div>
+  </section>
+
+  <!-- صفحة طلبات الألعاب -->
+  <section id="viewRequests" class="container page-card" style="display: none; margin: 40px auto;">
+    <h2 class="section-title"><i class="fa-solid fa-clipboard-list highlight"></i> اطلب لعبة أو مود</h2>
+    <p style="color: var(--text-gray); margin: 8px 0 20px;">ما لقيتيش اللعبة اللي كتقلب عليها؟ طلبها هنا، وغادي نجيبوها ليك إن شاء الله.</p>
+    <form class="contact-form" onsubmit="handleGameRequest(event)">
+      <div class="form-group">
+        <label>اسمك</label>
+        <input type="text" id="reqName" required placeholder="اسمك الكريم">
+      </div>
+      <div class="form-group">
+        <label>اسم اللعبة أو المود</label>
+        <input type="text" id="reqGameTitle" required placeholder="مثال: GTA San Andreas مود سيارات">
+      </div>
+      <div class="form-group">
+        <label>النوع</label>
+        <select id="reqGameType" class="sort-select" style="width: 100%;">
+          <option>لعبة أندرويد</option>
+          <option>مود GTA SA</option>
+          <option>لعبة مهكرة</option>
+          <option>شي حاجة أخرى</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>تفاصيل إضافية (اختياري)</label>
+        <textarea id="reqDetails" rows="3" placeholder="رابط، إصدار، ولا أي تفاصيل..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال الطلب</button>
+    </form>
+    <div id="reqSuccess" class="alert-success" style="display: none; margin-top: 15px;">
+      تم إرسال طلبك بنجاح! شكراً لك.
+    </div>
+    <h3 style="margin: 28px 0 12px;"><i class="fa-solid fa-list highlight"></i> آخر الطلبات</h3>
+    <div id="requestsList" class="requests-list"></div>
+    <button class="btn btn-secondary" style="margin-top: 20px;" onclick="switchView('home')">العودة للرئيسية</button>
   </section>
 
   <!-- نافذة التفاصيل والتحميل المنبثقة -->

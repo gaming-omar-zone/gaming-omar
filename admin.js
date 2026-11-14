@@ -48,6 +48,7 @@ function showDashboardView(user) {
     loadAdminMods();
     loadAdminReports();
     loadContactMessages();
+    loadGameRequestsAdmin();
     loadAdminSettings();
 }
 
@@ -101,6 +102,7 @@ window.switchAdminTab = function(tabId) {
     if (tab) tab.classList.add('active');
     if (tabId === 'reportsTab') loadAdminReports();
     if (tabId === 'messagesTab') loadContactMessages();
+    if (tabId === 'requestsTab') loadGameRequestsAdmin();
     if (tabId === 'categoriesTab') loadAdminCategories();
     if (tabId === 'settingsTab') loadAdminSettings();
 };
@@ -450,4 +452,47 @@ window.deleteMessage = async function(id) {
     if (!confirm('حذف هذه الرسالة؟')) return;
     await window.supabaseClient.from('contact_messages').delete().eq('id', id);
     loadContactMessages();
+};
+
+// طلبات الألعاب (أدمن): تغيير الحالة + حذف
+const REQUEST_STATUS_LABELS_ADMIN = {
+    pending: ['قيد الانتظار', 'badge-draft'],
+    approved: ['تم القبول', 'badge-approved'],
+    done: ['تمت الإضافة ✅', 'badge-published'],
+    rejected: ['مرفوض', 'badge-rejected']
+};
+async function loadGameRequestsAdmin() {
+    const { data, error } = await window.supabaseClient
+        .from('game_requests').select('*').order('created_at', { ascending: false });
+    const body = document.getElementById('requestsTableBody');
+    if (!body) return;
+    if (error) { body.innerHTML = '<tr><td colspan="5">خطأ: ' + esc(error.message) + '</td></tr>'; return; }
+    if (!data?.length) { body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-gray)">لا توجد طلبات.</td></tr>'; return; }
+    body.innerHTML = '';
+    data.forEach(r => {
+        const [label, cls] = REQUEST_STATUS_LABELS_ADMIN[r.status] || REQUEST_STATUS_LABELS_ADMIN.pending;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${esc(r.game_title)}</strong><br><small>طلبها ${esc(r.name)}</small>${r.details ? `<br><small style="color:var(--text-gray)">${esc(r.details)}</small>` : ''}</td>
+            <td>${esc(r.game_type)}</td>
+            <td><span class="${cls}">${esc(label)}</span></td>
+            <td>${new Date(r.created_at).toLocaleDateString('ar-EG')}</td>
+            <td style="white-space:nowrap">
+                ${r.status === 'pending' ? `<button class="btn btn-primary btn-sm" onclick="setRequestStatus('${r.id}', 'approved')">قبول</button>` : ''}
+                ${r.status === 'approved' ? `<button class="btn btn-primary btn-sm" onclick="setRequestStatus('${r.id}', 'done')">تمت الإضافة</button>` : ''}
+                ${r.status === 'pending' || r.status === 'approved' ? `<button class="btn btn-secondary btn-sm" onclick="setRequestStatus('${r.id}', 'rejected')">رفض</button>` : ''}
+                <button class="btn btn-danger btn-sm" onclick="deleteGameRequest('${r.id}')">حذف</button>
+            </td>`;
+        body.appendChild(tr);
+    });
+}
+window.loadGameRequestsAdmin = loadGameRequestsAdmin;
+window.setRequestStatus = async function(id, status) {
+    await window.supabaseClient.from('game_requests').update({ status }).eq('id', id);
+    loadGameRequestsAdmin();
+};
+window.deleteGameRequest = async function(id) {
+    if (!confirm('حذف هذا الطلب؟')) return;
+    await window.supabaseClient.from('game_requests').delete().eq('id', id);
+    loadGameRequestsAdmin();
 };

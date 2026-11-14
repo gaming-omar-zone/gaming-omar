@@ -103,6 +103,17 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- v3.1: NEW — game requests (visitors request a game/mod, admins approve/fulfil)
+CREATE TABLE IF NOT EXISTS public.game_requests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    game_title TEXT NOT NULL,
+    game_type TEXT NOT NULL DEFAULT 'لعبة أندرويد',
+    details TEXT,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'done', 'rejected')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS public.site_settings (
     key TEXT PRIMARY KEY,
     value JSONB NOT NULL
@@ -147,6 +158,7 @@ ALTER TABLE public.site_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.broken_links ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.game_requests ENABLE ROW LEVEL SECURITY;
 
 CREATE OR REPLACE FUNCTION is_admin() RETURNS BOOLEAN AS $$
 BEGIN
@@ -170,6 +182,9 @@ DROP POLICY IF EXISTS "Admins can manage reports" ON public.broken_links;
 DROP POLICY IF EXISTS "Anyone can send contact messages" ON public.contact_messages;
 DROP POLICY IF EXISTS "Admins can view contact messages" ON public.contact_messages;
 DROP POLICY IF EXISTS "Admins can manage contact messages" ON public.contact_messages;
+DROP POLICY IF EXISTS "Anyone can view game requests" ON public.game_requests;
+DROP POLICY IF EXISTS "Anyone can send game requests" ON public.game_requests;
+DROP POLICY IF EXISTS "Admins can manage game requests" ON public.game_requests;
 
 CREATE POLICY "Profiles access" ON public.profiles FOR ALL USING (auth.uid() = id OR is_admin());
 CREATE POLICY "Anyone can view categories" ON public.categories FOR SELECT USING (true);
@@ -187,6 +202,9 @@ CREATE POLICY "Admins can manage reports" ON public.broken_links FOR ALL USING (
 CREATE POLICY "Anyone can send contact messages" ON public.contact_messages FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admins can view contact messages" ON public.contact_messages FOR SELECT USING (is_admin());
 CREATE POLICY "Admins can manage contact messages" ON public.contact_messages FOR ALL USING (is_admin());
+CREATE POLICY "Anyone can view game requests" ON public.game_requests FOR SELECT USING (true);
+CREATE POLICY "Anyone can send game requests" ON public.game_requests FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admins can manage game requests" ON public.game_requests FOR ALL USING (is_admin());
 
 -- ---- Storage buckets ----
 INSERT INTO storage.buckets (id, name, public) VALUES ('mod-images', 'mod-images', true) ON CONFLICT (id) DO NOTHING;

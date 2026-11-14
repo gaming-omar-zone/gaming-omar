@@ -1315,3 +1315,52 @@ body {
 .floating-community-btn {
   box-shadow: 0 0 20px rgba(0, 136, 204, 0.7), 0 4px 15px rgba(0, 136, 204, 0.5);
 }
+
+/* ========================================================
+   v3.3 — صفحة طلبات الألعاب
+======================================================== */
+.requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.request-item {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.badge-approved {
+  background: rgba(54, 162, 235, 0.2);
+  color: #36a2eb;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+.badge-rejected {
+  background: rgba(229, 9, 20, 0.2);
+  color: #ff6b6b;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+.form-group select {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.form-group select option { background: #131518; color: #fff; }

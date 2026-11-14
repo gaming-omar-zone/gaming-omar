@@ -98,6 +98,7 @@
         <button class="tab-btn" onclick="switchAdminTab('reportsTab')"><i class="fa-solid fa-triangle-exclamation"></i> بلاغات الروابط المعطلة</button>
         <button class="tab-btn" onclick="switchAdminTab('categoriesTab')"><i class="fa-solid fa-folder-tree"></i> إدارة التصنيفات</button>
         <button class="tab-btn" onclick="switchAdminTab('messagesTab')"><i class="fa-solid fa-envelope"></i> رسائل الزوار</button>
+        <button class="tab-btn" onclick="switchAdminTab('requestsTab')"><i class="fa-solid fa-clipboard-list"></i> طلبات الألعاب</button>
         <button class="tab-btn" onclick="switchAdminTab('settingsTab')"><i class="fa-solid fa-sliders"></i> البانر والإعدادات</button>
       </div>
 
@@ -181,6 +182,20 @@
           <table class="data-table">
             <thead><tr><th>المرسل</th><th>الرسالة</th><th>التاريخ</th><th>الإجراء</th></tr></thead>
             <tbody id="messagesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- تبويب طلبات الألعاب -->
+      <div id="requestsTab" class="admin-tab-content">
+        <div class="tab-header">
+          <h3>طلبات الألعاب من الزوار</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadGameRequestsAdmin()"><i class="fa-solid fa-arrows-rotate"></i> تحديث</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>الطلب</th><th>النوع</th><th>الحالة</th><th>التاريخ</th><th>الإجراء</th></tr></thead>
+            <tbody id="requestsTableBody"></tbody>
           </table>
         </div>
       </div>

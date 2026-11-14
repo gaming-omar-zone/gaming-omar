@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSettings();
     await loadCategories();
     await loadMods();
+    await loadTrending();
     setupSearch();
     setupInteractiveStars();
 });
@@ -232,6 +233,48 @@ async function loadMods() {
     }
 }
 window.reloadMods = loadMods;
+
+// الرائج: أعلى 6 ألعاب/مودات حسب عدد التحميلات.
+// القسم يبقى مخفياً إلا كان هناك عناصر (قاعدة خاوية أو خطأ).
+async function loadTrending() {
+    const section = document.getElementById('trendingSection');
+    const grid = document.getElementById('trendingGrid');
+    if (!section || !grid) return;
+    try {
+        const { data: top, error } = await window.supabaseClient
+            .from('mods')
+            .select('id, title, image_url, download_count, rating_avg, rating_count, categories(name)')
+            .eq('is_published', true)
+            .order('download_count', { ascending: false })
+            .limit(6);
+        if (error || !top || top.length === 0) return;
+        grid.innerHTML = '';
+        top.forEach((mod, i) => {
+            const card = document.createElement('article');
+            card.className = 'trending-card';
+            card.innerHTML = `
+                <div class="trending-img-wrap">
+                    <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="trending-img" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                    <span class="trending-rank">#${i + 1}</span>
+                </div>
+                <div class="trending-info">
+                    <h3 class="trending-title">${esc(mod.title)}</h3>
+                    <div class="trending-meta">
+                        <span><i class="fa-solid fa-star" style="color:var(--star-gold);"></i> ${Number(mod.rating_avg ?? 5).toFixed(1)} (${mod.rating_count ?? 0})</span>
+                        <span><i class="fa-solid fa-download highlight"></i> ${mod.download_count ?? 0} تنزيل</span>
+                    </div>
+                    <button class="btn btn-primary btn-block btn-sm" onclick="openDetails('${esc(mod.id)}')">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> تحميل
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+        section.style.display = 'block';
+    } catch (e) {
+        console.error('Error loading trending:', e);
+    }
+}
 
 function applyCurrentFilters() {
     const searchInput = document.getElementById('searchInput');

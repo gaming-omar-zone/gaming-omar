@@ -845,3 +845,267 @@ body {
   outline: none;
 }
 .sort-select:focus { border-color: var(--primary-red); }
+
+/* ========================================================
+   v3 — Glassmorphism (بلور مائي بحال آيفون)
+   طبقة زجاجية فوق التصميم الحالي: خلفية متدرجة ملونة،
+   بطاقات شفافة مع blur، حواف فاتحة، وزوايا دائرية أكبر.
+   كل الكلاسات القديمة باقية، هادي غير كتغطي عليها.
+======================================================== */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-bg-strong: rgba(255, 255, 255, 0.12);
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-border-soft: rgba(255, 255, 255, 0.10);
+  --glass-blur: blur(20px) saturate(180%);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+}
+
+body {
+  background:
+    radial-gradient(600px 400px at 85% -5%, rgba(229, 9, 20, 0.35), transparent 60%),
+    radial-gradient(500px 400px at 10% 20%, rgba(0, 136, 204, 0.28), transparent 60%),
+    radial-gradient(700px 500px at 50% 110%, rgba(124, 58, 237, 0.25), transparent 60%),
+    linear-gradient(180deg, #0b0d12 0%, #0a0b0d 100%);
+  background-attachment: fixed;
+}
+
+/* شريط التنقل الزجاجي */
+.navbar {
+  background: rgba(10, 11, 13, 0.55);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border-soft);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+.nav-link {
+  border-radius: 999px;
+}
+.nav-link:hover, .nav-link.active {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.admin-btn {
+  background: rgba(229, 9, 20, 0.15);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+/* الواجهة الرئيسية: لوحة زجاجية فوق الصورة */
+.hero-section {
+  background:
+    linear-gradient(rgba(10, 11, 13, 0.55), rgba(10, 11, 13, 0.88)),
+    url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200') center/cover;
+  border-bottom: 1px solid var(--glass-border-soft);
+}
+.hero-content {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 36px 24px;
+  max-width: 820px;
+  margin: 0 auto;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+.hero-badge {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.hero-title {
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* الأزرار */
+.btn {
+  border-radius: 16px;
+}
+.btn-primary {
+  box-shadow: 0 8px 24px rgba(229, 9, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.btn-secondary {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+.btn-download-big {
+  border-radius: 18px !important;
+  box-shadow: 0 8px 24px rgba(229, 9, 20, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+/* البحث والتصنيفات والترتيب */
+.search-box input {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+.search-box input::placeholder { color: rgba(255, 255, 255, 0.55); }
+.search-box input:focus {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2);
+}
+.filter-btn {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.filter-btn.active, .filter-btn:hover {
+  box-shadow: 0 6px 20px rgba(229, 9, 20, 0.4);
+}
+.sort-select {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.sort-select option { background: #131518; color: #fff; }
+
+/* بطاقات الألعاب الزجاجية */
+.mod-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+.mod-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+.card-badge {
+  background: rgba(10, 11, 13, 0.55);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.fav-card-btn {
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border-soft);
+}
+.card-meta { border-top: 1px solid var(--glass-border-soft); }
+
+/* النافذة المنبثقة */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+}
+.modal-dialog {
+  background: rgba(22, 24, 30, 0.78);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+.timer-box, .btn-mirror, .spec-card, .rating-section, .comment-item {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.btn-mirror { border-radius: 14px; }
+.btn-mirror:hover { background: rgba(255, 255, 255, 0.12); }
+
+/* صفحات من نحن / اتصل بنا + الفورم */
+.page-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  box-shadow: var(--glass-shadow);
+}
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 700; }
+.form-group input, .form-group textarea,
+.contact-form input, .contact-form textarea,
+#viewContact input, #viewContact textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  outline: none;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.form-group input:focus, .form-group textarea:focus,
+.contact-form input:focus, .contact-form textarea:focus {
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.18);
+}
+.alert-danger, .alert-success {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 14px;
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.alert-danger { color: #ff8a8a; }
+.alert-success { color: #7bed9f; }
+
+/* التذييل والأيقونات */
+.footer {
+  background: rgba(7, 8, 10, 0.6);
+  border-top: 1px solid var(--glass-border-soft);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.social-icons a {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.ad-slot {
+  background: var(--glass-bg);
+  border: 1px dashed var(--glass-border);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+/* قائمة الهاتف */
+@media (max-width: 768px) {
+  .nav-links {
+    background: rgba(15, 17, 20, 0.85);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+    border-radius: 0 0 20px 20px;
+  }
+  .hero-content { padding: 28px 18px; border-radius: 22px; }
+  .hero-section { padding: 50px 16px 60px; }
+}
+
+::selection { background: rgba(229, 9, 20, 0.5); }

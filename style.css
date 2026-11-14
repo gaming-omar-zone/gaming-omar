@@ -1203,3 +1203,115 @@ body {
 @media (max-width: 768px) {
   .trending-card { min-width: 220px; max-width: 220px; }
 }
+
+/* ========================================================
+   v3.2 — تصميم نيون عصري (Neon)
+   طبقة توهج فوق الزجاج: تدرجات نيون، نص متوهج،
+   حدود مضيئة عند التحويم، ونبض خفيف. بدون تغيير الكلاسات.
+======================================================== */
+:root {
+  --neon-cyan: #00f0ff;
+  --neon-pink: #ff2d95;
+  --neon-violet: #a855f7;
+  --neon-red: #ff1f2d;
+}
+
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(229, 9, 20, 0.45), 0 0 32px rgba(255, 45, 149, 0.18); }
+  50% { box-shadow: 0 0 20px rgba(229, 9, 20, 0.7), 0 0 48px rgba(255, 45, 149, 0.35); }
+}
+@keyframes neonBorderFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* عنوان متدرج نيون */
+.hero-title {
+  background: linear-gradient(90deg, #ffffff 20%, #ffd166 45%, var(--neon-pink) 70%, var(--neon-cyan) 95%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: neonBorderFlow 6s ease infinite;
+  filter: drop-shadow(0 0 18px rgba(255, 45, 149, 0.35));
+}
+.highlight {
+  background: linear-gradient(90deg, var(--neon-red), var(--neon-pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* الشعار والشارة بتوهج نيون */
+.logo-icon {
+  color: var(--neon-pink);
+  text-shadow: 0 0 12px rgba(255, 45, 149, 0.8), 0 0 32px rgba(255, 45, 149, 0.4);
+}
+.hero-badge {
+  border-color: rgba(255, 45, 149, 0.6);
+  box-shadow: 0 0 16px rgba(255, 45, 149, 0.3), inset 0 0 12px rgba(255, 45, 149, 0.12);
+  animation: neonPulse 3s ease-in-out infinite;
+}
+
+/* الواجهة: إطار نيون متحرك */
+.hero-content {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(rgba(20, 22, 28, 0.55), rgba(20, 22, 28, 0.55)) padding-box,
+    linear-gradient(120deg, var(--neon-red), var(--neon-pink), var(--neon-violet), var(--neon-cyan), var(--neon-red)) border-box;
+  background-size: 100% 100%, 300% 300%;
+  animation: neonBorderFlow 8s ease infinite;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 45, 149, 0.15);
+}
+
+/* الأزرار بتوهج نيون */
+.btn-primary {
+  box-shadow: 0 0 18px rgba(229, 9, 20, 0.55), 0 8px 24px rgba(229, 9, 20, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.btn-primary:hover {
+  box-shadow: 0 0 28px rgba(255, 45, 149, 0.7), 0 8px 28px rgba(229, 9, 20, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.btn-download-big {
+  box-shadow: 0 0 22px rgba(229, 9, 20, 0.6), 0 8px 24px rgba(229, 9, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+
+/* البطاقات: حدود نيون عند التحويم */
+.mod-card:hover {
+  border-color: rgba(0, 240, 255, 0.55);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(0, 240, 255, 0.22);
+}
+.trending-card:hover {
+  border-color: rgba(255, 45, 149, 0.55);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 45, 149, 0.25);
+}
+.trending-rank {
+  box-shadow: 0 0 16px rgba(255, 45, 149, 0.7), 0 4px 14px rgba(229, 9, 20, 0.55);
+}
+
+/* التصنيفات النشطة بتدرج نيون */
+.filter-btn.active, .filter-btn:hover {
+  background: linear-gradient(135deg, var(--neon-red), var(--neon-pink));
+  box-shadow: 0 0 18px rgba(255, 45, 149, 0.5);
+}
+.nav-link:hover, .nav-link.active {
+  color: #fff;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+}
+
+/* عناوين الأقسام بتوهج خفيف */
+.section-title {
+  text-shadow: 0 0 24px rgba(255, 45, 149, 0.25);
+}
+.search-box input:focus {
+  border-color: rgba(0, 240, 255, 0.6);
+  box-shadow: 0 0 0 4px rgba(0, 240, 255, 0.15), 0 0 24px rgba(0, 240, 255, 0.2);
+}
+
+/* زر التيليجرام العائم بتوهج */
+.floating-community-btn {
+  box-shadow: 0 0 20px rgba(0, 136, 204, 0.7), 0 4px 15px rgba(0, 136, 204, 0.5);
+}

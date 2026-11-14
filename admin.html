@@ -97,6 +97,7 @@
         <button class="tab-btn active" onclick="switchAdminTab('modsTab')"><i class="fa-solid fa-gamepad"></i> إدارة الألعاب والمودات</button>
         <button class="tab-btn" onclick="switchAdminTab('reportsTab')"><i class="fa-solid fa-triangle-exclamation"></i> بلاغات الروابط المعطلة</button>
         <button class="tab-btn" onclick="switchAdminTab('categoriesTab')"><i class="fa-solid fa-folder-tree"></i> إدارة التصنيفات</button>
+        <button class="tab-btn" onclick="switchAdminTab('messagesTab')"><i class="fa-solid fa-envelope"></i> رسائل الزوار</button>
         <button class="tab-btn" onclick="switchAdminTab('settingsTab')"><i class="fa-solid fa-sliders"></i> البانر والإعدادات</button>
       </div>
 
@@ -105,6 +106,10 @@
         <div class="tab-header">
           <h3>قائمة الألعاب والمودات المرفوعة</h3>
           <button class="btn btn-primary" onclick="openModFormModal()"><i class="fa-solid fa-plus"></i> إضافة لعبة أو مود جديد</button>
+        </div>
+        <div class="search-box" style="margin-bottom:15px;">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" id="adminModSearch" placeholder="ابحث في لوحة الأدمن..." oninput="filterAdminMods()">
         </div>
 
         <div class="table-responsive">
@@ -162,6 +167,20 @@
               </tr>
             </thead>
             <tbody id="categoriesTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- تبويب رسائل الزوار -->
+      <div id="messagesTab" class="admin-tab-content">
+        <div class="tab-header">
+          <h3>رسائل الزوار من فورم "اتصل بنا"</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadContactMessages()"><i class="fa-solid fa-arrows-rotate"></i> تحديث</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead><tr><th>المرسل</th><th>الرسالة</th><th>التاريخ</th><th>الإجراء</th></tr></thead>
+            <tbody id="messagesTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -298,6 +317,12 @@
 
         <div id="uploadProgress" style="display:none; color: var(--primary-red); font-weight: bold; margin: 10px 0;">
           <i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الملفات إلى السيرفر... يرجى الانتظار
+        </div>
+
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+            <input type="checkbox" id="formIsPublished" checked style="width:auto;"> نشر فوراً على الموقع (إلا حيدتي العلامة غادي يبقى مسودة)
+          </label>
         </div>
 
         <button type="submit" class="btn btn-primary btn-block" id="saveModBtn">

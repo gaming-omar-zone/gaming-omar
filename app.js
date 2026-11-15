@@ -41,7 +41,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadGameRequests();
     setupSearch();
     setupInteractiveStars();
+    handleDeepLink();
 });
+
+// v3.7 — روابط مباشرة للألعاب: ?game=<id> يفتح نافذة اللعبة، ?search=<نص> يعبّي البحث
+function handleDeepLink() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('search');
+        if (q) {
+            const input = document.getElementById('searchInput');
+            if (input) { input.value = q; renderModsGrid(applyCurrentFilters()); }
+        }
+        const gameId = params.get('game');
+        if (gameId && typeof allMods !== 'undefined') {
+            const mod = allMods.find(m => m.id === gameId);
+            if (mod) {
+                switchView('mods');
+                setTimeout(() => window.openDetails(gameId), 400);
+            }
+        }
+    } catch (e) { /* تجاهل أخطاء الرابط */ }
+}
 
 window.switchView = function(viewName) {
     const viewHome = document.getElementById('viewHome');

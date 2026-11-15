@@ -71,6 +71,23 @@ window.switchView = function(viewName) {
     if (navLinks) navLinks.classList.remove('show');
 };
 
+// زر البحث في القائمة العلوية: يهبط لصندوق البحث، يفتحو، ويوميض عليه
+window.goToSearch = function() {
+    switchView('mods');
+    setTimeout(() => {
+        const input = document.getElementById('searchInput');
+        const box = document.querySelector('.search-box');
+        if (input) {
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            input.focus({ preventScroll: true });
+            if (box) {
+                box.classList.add('search-highlight');
+                setTimeout(() => box.classList.remove('search-highlight'), 1800);
+            }
+        }
+    }, 450);
+};
+
 function setupMobileNav() {
     const toggle = document.getElementById('navToggle');
     const navLinks = document.getElementById('navLinks');
@@ -432,6 +449,9 @@ function setupSearch() {
             clearTimeout(t);
             t = setTimeout(() => renderModsGrid(applyCurrentFilters()), 150);
         });
+        // أيقونة العدسة داخل صندوق البحث كتفتح الكتابة
+        const icon = document.querySelector('.search-box .search-icon');
+        if (icon) icon.addEventListener('click', () => input.focus());
     }
 }
 

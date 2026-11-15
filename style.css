@@ -1407,3 +1407,49 @@ body {
   backdrop-filter: var(--glass-blur);
 }
 .form-group select option { background: #131518; color: #fff; }
+
+/* ========================================================
+   v3.6 — أداء وسلاسة (Performance)
+   المشكل: الموقع كان تقيل على الهاتف (بحال 20 فريم).
+   الأسباب: backdrop-filter على 221 بطاقة + خلفية fixed
+   كتعاود الرسم مع كل سكرول + أنيميشن بلا توقف
+   + كل البطاقات كترسم دفعة وحدة.
+   الحل: بلا blur على البطاقات، خلفية عادية،
+   content-visibility للبطاقات لي برا الشاشة،
+   وإيقاف الأنيميشن على الهاتف. الشكل الزجاجي باقي
+   (نفس الألوان والحدود)، غير بلا تكلفة blur.
+======================================================== */
+
+/* blur أخف للعناصر الثابتة فقط (النافبار والمودال) */
+:root { --glass-blur: blur(8px) saturate(140%); }
+
+/* الخلفية الثابتة كتعاود الرسم مع كل سكرول — رجعها عادية */
+body { background-attachment: scroll; }
+
+/* البطاقات: بلا backdrop-filter + خلفية شبه صلبة (نفس المظهر تقريباً) */
+.mod-card, .trending-card {
+  background: rgba(19, 21, 24, 0.94);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  /* البطاقات لي برا الشاشة ما كترسمش حتى تقرب — أكبر ربح للسلاسة */
+  content-visibility: auto;
+  contain-intrinsic-size: 430px;
+}
+.trending-card { contain-intrinsic-size: 320px; }
+
+/* الشارات والأزرار الصغيرة فوق الصور: بلا blur تا هي */
+.card-badge, .fav-card-btn {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* الأنيميشن بلا توقف كيستهلك GPU — وقفو على الهاتف */
+@media (max-width: 768px) {
+  .hero-badge { animation: none; }
+  .hero-title { animation: none; filter: none; }
+}
+
+/* احترام إعداد تقليل الحركة ديال الهاتف */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

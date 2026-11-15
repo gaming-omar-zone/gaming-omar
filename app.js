@@ -277,7 +277,7 @@ async function loadTrending() {
             card.className = 'trending-card';
             card.innerHTML = `
                 <div class="trending-img-wrap">
-                    <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="trending-img" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                    <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="trending-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                     <span class="trending-rank">#${i + 1}</span>
                 </div>
                 <div class="trending-info">
@@ -378,6 +378,18 @@ function applyCurrentFilters() {
     return filtered;
 }
 
+// v3.6 — ترقيم (pagination): نرسم 24 بطاقة فقط في البداية،
+// والباقي كيبان بزر "عرض المزيد" — هادي أكبر خطوة للسلاسة مع 221 لعبة.
+const PAGE_SIZE = 24;
+let visibleCount = PAGE_SIZE;
+let lastFilteredMods = null;
+let lastFilteredFingerprint = '';
+
+window.loadMoreMods = function() {
+    visibleCount += PAGE_SIZE;
+    renderModsGrid(lastFilteredMods);
+};
+
 function renderModsGrid(mods) {
     const grid = document.getElementById('modsGrid');
     const noResults = document.getElementById('noResults');
@@ -388,11 +400,23 @@ function renderModsGrid(mods) {
 
     if (!mods || mods.length === 0) {
         if (noResults) noResults.style.display = 'block';
+        const moreBtn0 = document.getElementById('loadMoreBtn');
+        if (moreBtn0) moreBtn0.style.display = 'none';
         return;
     }
     if (noResults) noResults.style.display = 'none';
 
-    mods.forEach(mod => {
+    // v3.6 — إلا تبدلات القائمة (بحث/فلتر/ترتيب) رجع للـ 24 الأولى؛
+    // إلا كانت نفس القائمة (مثلاً ضغط على قلب المفضلة) كمّل من فين وصلنا.
+    const fingerprint = mods.length + '|' + (mods[0] ? mods[0].id : '') + '|' + (mods[mods.length - 1] ? mods[mods.length - 1].id : '');
+    if (fingerprint !== lastFilteredFingerprint) {
+        visibleCount = PAGE_SIZE;
+        lastFilteredFingerprint = fingerprint;
+    }
+    lastFilteredMods = mods;
+    const visible = mods.slice(0, visibleCount);
+
+    visible.forEach(mod => {
         const catName = mod.categories ? mod.categories.name : 'ألعاب أندرويد';
         const isFav = isFavorite(mod.id);
         const modeTag = mod.is_online 
@@ -403,7 +427,7 @@ function renderModsGrid(mods) {
         card.className = 'mod-card';
         card.innerHTML = `
             <div class="card-img-wrapper">
-                <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="card-img" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="card-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
                 <span class="card-badge">${esc(catName)}</span>
                 <button class="fav-card-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${esc(mod.id)}')" title="حفظ في المفضلة">
                     <i class="fa-solid fa-heart"></i>
@@ -429,6 +453,14 @@ function renderModsGrid(mods) {
         `;
         grid.appendChild(card);
     });
+
+    // v3.6 — زر "عرض المزيد": يبان إلا بقاو ألعاب ما ترسموش
+    const moreBtn = document.getElementById('loadMoreBtn');
+    if (moreBtn) {
+        const remaining = mods.length - visibleCount;
+        moreBtn.style.display = remaining > 0 ? 'block' : 'none';
+        if (remaining > 0) moreBtn.textContent = `عرض المزيد (${remaining} لعبة باقية) ⬇️`;
+    }
 }
 
 window.filterByCategory = function(catId, btnElement) {

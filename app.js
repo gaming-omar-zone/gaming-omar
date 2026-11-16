@@ -259,11 +259,25 @@ async function loadMods() {
     if (errBox) errBox.style.display = 'none';
 
     try {
-        const { data: mods, error } = await window.supabaseClient
-            .from('mods')
-            .select('*, categories(name)')
-            .eq('is_published', true)
-            .order('created_at', { ascending: false });
+        // Paginated fetch: Supabase REST caps one request at 1000 rows,
+        // and the library is now past 1000 items (1121 on 2026-11-16).
+        // Without paging, the oldest items never reach the page.
+        let all = [];
+        let from = 0;
+        const PAGE = 1000;
+        for (;;) {
+            const { data: page, error } = await window.supabaseClient
+                .from('mods')
+                .select('*, categories(name)')
+                .eq('is_published', true)
+                .order('created_at', { ascending: false })
+                .range(from, from + PAGE - 1);
+            if (error) throw error;
+            all = all.concat(page || []);
+            if (!page || page.length < PAGE) break;
+            from += PAGE;
+        }
+        const mods = all;
 
         if (loading) loading.style.display = 'none';
         if (error) throw error;

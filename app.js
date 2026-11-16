@@ -13,6 +13,7 @@ let countdownTimer = null;
 // v3.9 — قسم الألعاب بحدو والمودات بحدهم في الواجهة الرئيسية.
 // تصنيف "ألعاب أندرويد" في قاعدة البيانات (ثابت) — كل ما عداه مود GTA SA.
 const GAMES_CATEGORY_ID = '49fbd197-c507-40a4-b1f7-f740fae5b194';
+const HOME_GAMES_COUNT = 12; // الألعاب: صف أفقي كيتمشى بالسحب
 const HOME_SHOWCASE_COUNT = 8; // صفّان على الحاسوب (4 أعمدة × 2)، وأكثر على الهاتف
 
 // v2 (GitHub merge): escape DB/user text before innerHTML (XSS fix)
@@ -101,13 +102,24 @@ window.switchView = function(viewName) {
     } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    setBottomNavActive(viewName);
     const navLinks = document.getElementById('navLinks');
     if (navLinks) navLinks.classList.remove('show');
 };
 
+
+// الشريط السفلي: كيبرز التبويب النشط (الرئيسية، بحث، الألعاب، المودات، المكتبة)
+function setBottomNavActive(viewName) {
+    document.querySelectorAll('.bn-item').forEach(b => {
+        b.classList.toggle('active', b.dataset.view === viewName);
+    });
+}
+window.setBottomNavActive = setBottomNavActive;
+
 // زر البحث في القائمة العلوية: يهبط لصندوق البحث، يفتحو، ويوميض عليه
 window.goToSearch = function() {
     switchView('library');
+    setBottomNavActive('search');
     setTimeout(() => {
         const input = document.getElementById('searchInput');
         const box = document.querySelector('.search-box');
@@ -502,7 +514,7 @@ function renderHomeSections() {
     if (gamesGrid) {
         const games = allMods.filter(mod => mod.category_id === GAMES_CATEGORY_ID);
         gamesGrid.innerHTML = '';
-        games.slice(0, HOME_SHOWCASE_COUNT).forEach(mod => gamesGrid.appendChild(buildModCard(mod)));
+        games.slice(0, HOME_GAMES_COUNT).forEach(mod => gamesGrid.appendChild(buildModCard(mod)));
         const gc = document.getElementById('gamesCount');
         if (gc) gc.textContent = `(${games.length} لعبة)`;
     }

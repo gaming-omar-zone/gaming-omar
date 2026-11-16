@@ -25,6 +25,25 @@
 </head>
 <body>
 
+  <!-- الشريط العائم السفلي -->
+  <nav class="bottom-nav" id="bottomNav" aria-label="التنقل السريع">
+    <button class="bn-item active" data-view="home" onclick="switchView('home')">
+      <i class="fa-solid fa-house"></i><span>الرئيسية</span>
+    </button>
+    <button class="bn-item" data-view="search" onclick="goToSearch()">
+      <i class="fa-solid fa-magnifying-glass"></i><span>بحث</span>
+    </button>
+    <button class="bn-item" data-view="games" onclick="switchView('games')">
+      <i class="fa-solid fa-gamepad"></i><span>الألعاب</span>
+    </button>
+    <button class="bn-item" data-view="mods" onclick="switchView('mods')">
+      <i class="fa-solid fa-wrench"></i><span>المودات</span>
+    </button>
+    <button class="bn-item" data-view="library" onclick="switchView('library')">
+      <i class="fa-solid fa-book-open"></i><span>المكتبة</span>
+    </button>
+  </nav>
+
   <!-- زر التيليجرام العائم المباشر لقناتك -->
   <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" class="floating-community-btn" title="انضم لقناتنا الرسمية على التيليجرام">
     <i class="fa-brands fa-telegram"></i>
@@ -101,7 +120,7 @@
         </div>
         <button class="btn btn-secondary show-all-btn" onclick="showAllGames()">عرض كل الألعاب <i class="fa-solid fa-arrow-left"></i></button>
       </div>
-      <div class="mods-grid" id="gamesGrid"></div>
+      <div class="mods-grid games-row" id="gamesGrid"></div>
     </section>
 
     <!-- قسم مودات GTA SA -->

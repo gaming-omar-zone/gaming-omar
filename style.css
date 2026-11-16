@@ -1623,3 +1623,83 @@ body { background-attachment: scroll; }
   .form-row { grid-template-columns: 1fr; }
   .stat-card { padding: 14px; }
 }
+
+
+/* ========================================================
+   v4.0 — شريط التنقل العائم السفلي + صف الألعاب الأفقي
+======================================================== */
+body { padding-bottom: 96px; }
+
+.bottom-nav {
+  position: fixed;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(94%, 520px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(19, 21, 24, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.55);
+  z-index: 9998;
+}
+.bn-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+  color: var(--text-gray);
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+}
+.bn-item i { font-size: 1.15rem; }
+.bn-item span { white-space: nowrap; }
+.bn-item:hover { color: #fff; }
+.bn-item.active {
+  background: linear-gradient(135deg, var(--primary-red), #99050d);
+  color: #fff;
+  box-shadow: 0 0 18px rgba(229, 9, 20, 0.55);
+}
+
+/* زر التيليجرام يطلع فوق الشريط باش ما يتغطاش */
+.floating-community-btn { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+
+/* الألعاب: صف أفقي بالسحب (بحال الرائج) — المودات كيبقاو شبكة */
+.games-row {
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 14px;
+  -webkit-overflow-scrolling: touch;
+}
+.games-row::-webkit-scrollbar { height: 6px; }
+.games-row::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+}
+.games-row > .mod-card {
+  flex: 0 0 250px;
+  width: 250px;
+  scroll-snap-align: start;
+}
+@media (max-width: 768px) {
+  .games-row > .mod-card { flex-basis: 220px; width: 220px; }
+}

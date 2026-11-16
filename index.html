@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
   <title>Gaming Omar | تحميل ألعاب أندرويد مهكرة ومودات GTA SA الأصلية</title>
   <meta name="description" content="موقع Gaming Omar الرسمي لتحميل أحدث ألعاب الأندرويد المهكرة والأوفلاين، وأقوى مودات GTA San Andreas بروابط مباشرة ومفحوصة 100%.">
@@ -12,7 +12,7 @@
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#0a0b0d">
+  <meta name="theme-color" content="#05070a">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +39,7 @@
       </div>
 
       <div class="nav-actions">
+        <a class="nav-search-btn" href="admin.html" aria-label="لوحة الأدمن"><i class="fa-solid fa-lock"></i></a>
         <button class="nav-search-btn" id="navSearchBtn" aria-label="بحث" onclick="goToSearch()">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
@@ -96,24 +97,26 @@
     <section class="container home-showcase" id="gamesSection">
       <div class="showcase-header">
         <div>
+          <span class="eyebrow">01 — GAMES</span>
           <h2 class="section-title"><i class="fa-solid fa-gamepad highlight"></i> ألعاب أندرويد</h2>
           <p class="section-subtitle">أحدث الألعاب المضافة <span id="gamesCount"></span></p>
         </div>
         <button class="btn btn-secondary show-all-btn" onclick="showAllGames()">عرض كل الألعاب <i class="fa-solid fa-arrow-left"></i></button>
       </div>
-      <div class="mods-grid" id="gamesGrid"></div>
+      <div class="rails" id="gamesGrid"></div>
     </section>
 
     <!-- قسم مودات GTA SA -->
     <section class="container home-showcase" id="modsSection">
       <div class="showcase-header">
         <div>
+          <span class="eyebrow">02 — MODS</span>
           <h2 class="section-title"><i class="fa-solid fa-wrench highlight"></i> مودات GTA SA</h2>
           <p class="section-subtitle">أقوى مودات سان أندرياس <span id="modsHomeCount"></span></p>
         </div>
         <button class="btn btn-secondary show-all-btn" onclick="showAllMods()">عرض كل المودات <i class="fa-solid fa-arrow-left"></i></button>
       </div>
-      <div class="mods-grid" id="modsHomeGrid"></div>
+      <div class="rails" id="modsHomeGrid"></div>
     </section>
 
     <!-- مساحة إعلانية جاهزة -->
@@ -422,6 +425,17 @@
       <p>&copy; <span id="yearSpan"></span> Gaming Omar - جميع الحقوق محفوظة لعشاق ألعاب الأندرويد.</p>
     </div>
   </footer>
+
+  <!-- شريط التنقل السفلي (كيبان فالهاتف فقط) -->
+  <nav class="bottom-nav" aria-label="التنقل">
+    <button class="bn-item active" data-view="home" onclick="switchView('home')"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
+    <button class="bn-item" onclick="goToSearch()"><i class="fa-solid fa-magnifying-glass"></i><span>بحث</span></button>
+    <button class="bn-item" data-view="games" onclick="switchView('games')"><i class="fa-solid fa-gamepad"></i><span>الألعاب</span></button>
+    <button class="bn-item" data-view="mods" onclick="switchView('mods')"><i class="fa-solid fa-wrench"></i><span>المودات</span></button>
+    <button class="bn-item" data-view="requests" onclick="switchView('requests')"><i class="fa-solid fa-clipboard-list"></i><span>اطلب</span></button>
+    <button class="bn-item" data-view="about" onclick="switchView('about')"><i class="fa-solid fa-circle-info"></i><span>من نحن</span></button>
+    <button class="bn-item" data-view="contact" onclick="switchView('contact')"><i class="fa-solid fa-envelope"></i><span>اتصل</span></button>
+  </nav>
 
   <script src="supabase-client.js"></script>
   <script src="app.js"></script>

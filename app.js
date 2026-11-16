@@ -10,6 +10,11 @@ let activeMod = null;
 let showingFavorites = false;
 let countdownTimer = null;
 
+// v3.9 — قسم الألعاب بحدو والمودات بحدهم في الواجهة الرئيسية.
+// تصنيف "ألعاب أندرويد" في قاعدة البيانات (ثابت) — كل ما عداه مود GTA SA.
+const GAMES_CATEGORY_ID = '49fbd197-c507-40a4-b1f7-f740fae5b194';
+const HOME_SHOWCASE_COUNT = 8; // صفّان على الحاسوب (4 أعمدة × 2)، وأكثر على الهاتف
+
 // v2 (GitHub merge): escape DB/user text before innerHTML (XSS fix)
 function esc(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -57,7 +62,7 @@ function handleDeepLink() {
         if (gameId && typeof allMods !== 'undefined') {
             const mod = allMods.find(m => m.id === gameId);
             if (mod) {
-                switchView('mods');
+                switchView('library');
                 setTimeout(() => window.openDetails(gameId), 400);
             }
         }
@@ -70,7 +75,9 @@ window.switchView = function(viewName) {
     const viewContact = document.getElementById('viewContact');
     const viewRequests = document.getElementById('viewRequests');
 
-    if (viewHome) viewHome.style.display = (viewName === 'home' || viewName === 'mods') ? 'block' : 'none';
+    // v3.9 — 'games' قسم الألعاب، 'mods' قسم المودات، 'library' المكتبة الكاملة
+    const homeViews = ['home', 'mods', 'games', 'library'];
+    if (viewHome) viewHome.style.display = homeViews.includes(viewName) ? 'block' : 'none';
     if (viewAbout) viewAbout.style.display = viewName === 'about' ? 'block' : 'none';
     if (viewContact) viewContact.style.display = viewName === 'contact' ? 'block' : 'none';
     if (viewRequests) {
@@ -82,7 +89,13 @@ window.switchView = function(viewName) {
     const targetLink = document.querySelector(`.nav-link[onclick="switchView('${viewName}')"]`);
     if (targetLink) targetLink.classList.add('active');
 
-    if (viewName === 'mods') {
+    if (viewName === 'games') {
+        const el = document.getElementById('gamesSection');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else if (viewName === 'mods') {
+        const el = document.getElementById('modsSection');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else if (viewName === 'library') {
         const modsSection = document.getElementById('mods');
         if (modsSection) modsSection.scrollIntoView({ behavior: 'smooth' });
     } else {
@@ -94,7 +107,7 @@ window.switchView = function(viewName) {
 
 // زر البحث في القائمة العلوية: يهبط لصندوق البحث، يفتحو، ويوميض عليه
 window.goToSearch = function() {
-    switchView('mods');
+    switchView('library');
     setTimeout(() => {
         const input = document.getElementById('searchInput');
         const box = document.querySelector('.search-box');
@@ -143,6 +156,7 @@ window.toggleFavorite = function(e, modId) {
     localStorage.setItem('gaming_omar_favs', JSON.stringify(favs));
     updateFavoritesBadge();
     renderModsGrid(applyCurrentFilters());
+    renderHomeSections(); // v3.9 — حدّث قلوب أقسام الواجهة الرئيسية حتى هي
 };
 
 function updateFavoritesBadge() {
@@ -280,10 +294,10 @@ async function loadMods() {
         const mods = all;
 
         if (loading) loading.style.display = 'none';
-        if (error) throw error;
 
         allMods = mods || [];
         renderModsGrid(applyCurrentFilters());
+        renderHomeSections(); // v3.9 — عمّر قسمي الألعاب والمودات في الرئيسية
     } catch (err) {
         if (loading) loading.style.display = 'none';
         console.error("Error loading mods:", err);
@@ -402,7 +416,9 @@ function applyCurrentFilters() {
     const favs = getFavorites();
 
     const filtered = allMods.filter(mod => {
-        const matchCat = selectedCategory === 'all' || mod.category_id === selectedCategory;
+        // v3.9 — 'mods-only': كل المودات (أي تصنيف ما عدا ألعاب أندرويد)
+        const matchCat = selectedCategory === 'all'
+            || (selectedCategory === 'mods-only' ? mod.category_id !== GAMES_CATEGORY_ID : mod.category_id === selectedCategory);
         const hay = ((mod.title || '') + ' ' + (mod.short_desc || '') + ' ' + (mod.description || '')).toLowerCase();
         const matchSearch = !q || hay.includes(q);
         const matchFav = !showingFavorites || favs.includes(mod.id);
@@ -423,6 +439,92 @@ let lastFilteredFingerprint = '';
 window.loadMoreMods = function() {
     visibleCount += PAGE_SIZE;
     renderModsGrid(lastFilteredMods);
+};
+
+// v3.9 — بطاقة واحدة مشتركة: شبكة المكتبة + قسمي الألعاب والمودات في الرئيسية
+function buildModCard(mod) {
+    const catName = mod.categories ? mod.categories.name : 'ألعاب أندرويد';
+    const isFav = isFavorite(mod.id);
+    const modeTag = mod.is_online
+        ? '<span class="tag-badge tag-online">أونلاين</span>'
+        : '<span class="tag-badge tag-offline">أوفلاين</span>';
+
+    const card = document.createElement('div');
+    card.className = 'mod-card';
+    card.innerHTML = `
+        <div class="card-img-wrapper">
+            <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="card-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+            <span class="card-badge">${esc(catName)}</span>
+            <button class="fav-card-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${esc(mod.id)}')" title="حفظ في المفضلة">
+                <i class="fa-solid fa-heart"></i>
+            </button>
+        </div>
+        <div class="card-content">
+            <div class="card-rating-row">
+                <i class="fa-solid fa-star"></i>
+                <span>${Number(mod.rating_avg ?? 5).toFixed(1)}</span>
+                <span style="color:var(--text-gray); font-size:0.75rem;">(${mod.rating_count ?? 0})</span>
+                <span style="margin-right:auto;">${modeTag}</span>
+            </div>
+            <h3 class="card-title">${esc(mod.title)}</h3>
+            <p class="card-desc">${esc(mod.short_desc)}</p>
+            <div class="card-meta">
+                <span><i class="fa-solid fa-file-zipper highlight"></i> ${esc(mod.file_size)}</span>
+                <span><i class="fa-solid fa-download highlight"></i> ${mod.download_count ?? 0} تنزيل</span>
+            </div>
+            <button class="btn btn-primary btn-block" onclick="openDetails('${esc(mod.id)}')">
+                <i class="fa-solid fa-eye"></i> التفاصيل والتحميل
+            </button>
+        </div>
+    `;
+    return card;
+}
+
+// v3.9 — أقسام الواجهة الرئيسية: الألعاب بحدها والمودات بحدهم.
+// الألعاب: 8 ألعاب (صفّان × 4 أعمدة على الحاسوب)؛ المودات: 8 مودات. الأحدث أولاً.
+function renderHomeSections() {
+    const gamesGrid = document.getElementById('gamesGrid');
+    if (gamesGrid) {
+        const games = allMods.filter(mod => mod.category_id === GAMES_CATEGORY_ID);
+        gamesGrid.innerHTML = '';
+        games.slice(0, HOME_SHOWCASE_COUNT).forEach(mod => gamesGrid.appendChild(buildModCard(mod)));
+        const gc = document.getElementById('gamesCount');
+        if (gc) gc.textContent = `(${games.length} لعبة)`;
+    }
+    const modsGrid = document.getElementById('modsHomeGrid');
+    if (modsGrid) {
+        const mods = allMods.filter(mod => mod.category_id !== GAMES_CATEGORY_ID);
+        // تنويع: أحدث مود من كل تصنيف أولاً (سيارات، ملابس، شخصيات، أسلحة،
+        // جرافيكس، خرائط، كليو) باش القسم يبيّن كل الأنواع، ثم كمّل بالأحدث.
+        const picked = [];
+        const seen = new Set();
+        const modCatIds = [...new Set(mods.map(m => m.category_id))];
+        modCatIds.forEach(catId => {
+            const newest = mods.find(m => m.category_id === catId);
+            if (newest && !seen.has(newest.id)) { picked.push(newest); seen.add(newest.id); }
+        });
+        for (const mod of mods) {
+            if (picked.length >= HOME_SHOWCASE_COUNT) break;
+            if (!seen.has(mod.id)) { picked.push(mod); seen.add(mod.id); }
+        }
+        modsGrid.innerHTML = '';
+        picked.slice(0, HOME_SHOWCASE_COUNT).forEach(mod => modsGrid.appendChild(buildModCard(mod)));
+        const mc = document.getElementById('modsHomeCount');
+        if (mc) mc.textContent = `(${mods.length} مود)`;
+    }
+}
+
+// أزرار "عرض كل الألعاب / عرض كل المودات": تهبط للمكتبة مع الفلتر المناسب
+window.showAllGames = function() {
+    switchView('library');
+    const btn = document.querySelector(`.filter-btn[data-category="${GAMES_CATEGORY_ID}"]`);
+    filterByCategory(GAMES_CATEGORY_ID, btn || null);
+};
+
+window.showAllMods = function() {
+    switchView('library');
+    const btn = document.querySelector('.filter-btn[data-category="mods-only"]');
+    filterByCategory('mods-only', btn || null);
 };
 
 function renderModsGrid(mods) {
@@ -451,43 +553,7 @@ function renderModsGrid(mods) {
     lastFilteredMods = mods;
     const visible = mods.slice(0, visibleCount);
 
-    visible.forEach(mod => {
-        const catName = mod.categories ? mod.categories.name : 'ألعاب أندرويد';
-        const isFav = isFavorite(mod.id);
-        const modeTag = mod.is_online 
-            ? '<span class="tag-badge tag-online">أونلاين</span>' 
-            : '<span class="tag-badge tag-offline">أوفلاين</span>';
-
-        const card = document.createElement('div');
-        card.className = 'mod-card';
-        card.innerHTML = `
-            <div class="card-img-wrapper">
-                <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="card-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-                <span class="card-badge">${esc(catName)}</span>
-                <button class="fav-card-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${esc(mod.id)}')" title="حفظ في المفضلة">
-                    <i class="fa-solid fa-heart"></i>
-                </button>
-            </div>
-            <div class="card-content">
-                <div class="card-rating-row">
-                    <i class="fa-solid fa-star"></i>
-                    <span>${Number(mod.rating_avg ?? 5).toFixed(1)}</span>
-                    <span style="color:var(--text-gray); font-size:0.75rem;">(${mod.rating_count ?? 0})</span>
-                    <span style="margin-right:auto;">${modeTag}</span>
-                </div>
-                <h3 class="card-title">${esc(mod.title)}</h3>
-                <p class="card-desc">${esc(mod.short_desc)}</p>
-                <div class="card-meta">
-                    <span><i class="fa-solid fa-file-zipper highlight"></i> ${esc(mod.file_size)}</span>
-                    <span><i class="fa-solid fa-download highlight"></i> ${mod.download_count ?? 0} تنزيل</span>
-                </div>
-                <button class="btn btn-primary btn-block" onclick="openDetails('${esc(mod.id)}')">
-                    <i class="fa-solid fa-eye"></i> التفاصيل والتحميل
-                </button>
-            </div>
-        `;
-        grid.appendChild(card);
-    });
+    visible.forEach(mod => grid.appendChild(buildModCard(mod)));
 
     // v3.6 — زر "عرض المزيد": يبان إلا بقاو ألعاب ما ترسموش
     const moreBtn = document.getElementById('loadMoreBtn');

@@ -347,6 +347,28 @@ body {
   color: var(--text-gray);
 }
 
+/* v3.9 — قسمي الواجهة الرئيسية: الألعاب بحدها والمودات بحدهم */
+.home-showcase {
+  padding: 40px 16px 0;
+}
+
+.showcase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.showcase-header .section-title {
+  text-align: right;
+}
+
+.show-all-btn {
+  white-space: nowrap;
+}
+
 .search-box {
   position: relative;
   max-width: 650px;

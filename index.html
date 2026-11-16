@@ -50,7 +50,9 @@
 
       <nav class="nav-links" id="navLinks">
         <a href="#home" class="nav-link active" onclick="switchView('home')"><i class="fa-solid fa-house"></i> الرئيسية</a>
-        <a href="#mods" class="nav-link" onclick="switchView('mods')"><i class="fa-solid fa-gamepad"></i> الألعاب والمودات</a>
+        <a href="#gamesSection" class="nav-link" onclick="switchView('games')"><i class="fa-solid fa-gamepad"></i> الألعاب</a>
+        <a href="#modsSection" class="nav-link" onclick="switchView('mods')"><i class="fa-solid fa-wrench"></i> المودات</a>
+        <a href="#mods" class="nav-link" onclick="switchView('library')"><i class="fa-solid fa-book-open"></i> المكتبة</a>
         <a href="#requests" class="nav-link" onclick="switchView('requests')"><i class="fa-solid fa-clipboard-list"></i> اطلب لعبة</a>
         <a href="#about" class="nav-link" onclick="switchView('about')"><i class="fa-solid fa-circle-info"></i> من نحن</a>
         <a href="#contact" class="nav-link" onclick="switchView('contact')"><i class="fa-solid fa-envelope"></i> اتصل بنا</a>
@@ -68,7 +70,7 @@
         <h1 class="hero-title" id="heroTitle">منصة Gaming Omar لألعاب ومودات الأندرويد</h1>
         <p class="hero-desc" id="heroSubtitle">وجهتك الأولى لتحميل أحدث ألعاب الأندرويد المهكرة والكاملة، بالإضافة إلى أقوى مودات وتعديلات GTA San Andreas بروابط مباشرة وسريعة.</p>
         <div class="hero-actions">
-          <button class="btn btn-primary" onclick="switchView('mods')">
+          <button class="btn btn-primary" onclick="switchView('games')">
             <i class="fa-solid fa-download"></i> تصفح وتحميل الألعاب
           </button>
           <button class="btn btn-secondary" onclick="showFavoritesOnly()">
@@ -90,6 +92,30 @@
       <div class="trending-scroll" id="trendingGrid"></div>
     </section>
 
+    <!-- قسم ألعاب أندرويد — واجهة رئيسية: صفّان من الألعاب -->
+    <section class="container home-showcase" id="gamesSection">
+      <div class="showcase-header">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-gamepad highlight"></i> ألعاب أندرويد</h2>
+          <p class="section-subtitle">أحدث الألعاب المضافة <span id="gamesCount"></span></p>
+        </div>
+        <button class="btn btn-secondary show-all-btn" onclick="showAllGames()">عرض كل الألعاب <i class="fa-solid fa-arrow-left"></i></button>
+      </div>
+      <div class="mods-grid" id="gamesGrid"></div>
+    </section>
+
+    <!-- قسم مودات GTA SA -->
+    <section class="container home-showcase" id="modsSection">
+      <div class="showcase-header">
+        <div>
+          <h2 class="section-title"><i class="fa-solid fa-wrench highlight"></i> مودات GTA SA</h2>
+          <p class="section-subtitle">أقوى مودات سان أندرياس <span id="modsHomeCount"></span></p>
+        </div>
+        <button class="btn btn-secondary show-all-btn" onclick="showAllMods()">عرض كل المودات <i class="fa-solid fa-arrow-left"></i></button>
+      </div>
+      <div class="mods-grid" id="modsHomeGrid"></div>
+    </section>
+
     <!-- مساحة إعلانية جاهزة -->
     <div class="container">
       <div class="ad-slot">
@@ -97,10 +123,10 @@
       </div>
     </div>
 
-    <!-- قسم الألعاب والمودات -->
+    <!-- المكتبة الكاملة: بحث + تصنيفات -->
     <section class="container mods-section" id="mods">
       <div class="section-header">
-        <h2 class="section-title"><i class="fa-solid fa-cubes highlight"></i> مكتبة الألعاب والتعديلات</h2>
+        <h2 class="section-title"><i class="fa-solid fa-cubes highlight"></i> المكتبة الكاملة</h2>
         <p class="section-subtitle">اختر التصنيف المفضل لديك أو استخدم محرك البحث المباشر</p>
       </div>
 
@@ -114,6 +140,9 @@
       <div class="categories-filter" id="categoriesBar">
         <button class="filter-btn active" data-category="all">
           <i class="fa-solid fa-border-all"></i> الكل
+        </button>
+        <button class="filter-btn" data-category="mods-only" onclick="filterByCategory('mods-only', this)">
+          <i class="fa-solid fa-wrench"></i> كل المودات
         </button>
         <button class="filter-btn fav-btn" id="favFilterBtn" onclick="toggleFavoritesFilter()">
           <i class="fa-solid fa-heart"></i> المفضلة

@@ -83,8 +83,3 @@ Settings > Pages > Source: Deploy from a branch > Branch: `main` > Folder: `/`
 - `rel/noopener` فـ `window.open`، `noindex` فـ `admin.html`، `fa-shield-check` (Pro فقط) → `fa-shield-halved`.
 - أزرار الإرسال (طلب لعبة / تعليق) كتتعطل أثناء الإرسال.
 - تصنيف "ألعاب أندرويد" (نفس الـ UUID ديال `GAMES_CATEGORY_ID`) تزاد فـ `schema.sql`.
-
-## v5 — ستايل جديد
-- ألوان: أخضر نيون (`#56f59b` → `#bafe5b`) على `#05070a`، هيدر كبسولة، بانر بعنوان متدرج.
-- شريط تنقل سفلي (الهاتف فقط، ≤ 820px) + أيقونة القفل للأدمن فالهيدر.
-- الألعاب والمودات فالرئيسية: 3 صفوف أفقية، كل صف عندو سهم، بطاقات مصغرة (`buildRailCard` / `fillRails` فـ `app.js`).

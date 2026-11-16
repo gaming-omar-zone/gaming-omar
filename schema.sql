@@ -38,6 +38,12 @@ INSERT INTO public.categories (name, slug, icon) VALUES
 ('مودات كليو', 'cleo', 'fa-code')
 ON CONFLICT (slug) DO NOTHING;
 
+-- v3: تصنيف "ألعاب أندرويد" — app.js كيعتمد على هاد الـ UUID بالضبط (GAMES_CATEGORY_ID).
+-- إلا كان عندك التصنيف من قبل فـ Supabase، هاد السطر كيتجاهل (ما كيدير والو).
+INSERT INTO public.categories (id, name, slug, icon)
+VALUES ('49fbd197-c507-40a4-b1f7-f740fae5b194', 'ألعاب أندرويد', 'android-games', 'fa-gamepad')
+ON CONFLICT DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS public.mods (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     title TEXT NOT NULL,
@@ -131,7 +137,7 @@ BEGIN
     SET download_count = download_count + 1
     WHERE id = target_mod_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- v2: NEW — rating function (app.js called add_mod_rating, it did not exist)
 -- Validates 1..5, then updates the running average atomically.
@@ -148,7 +154,7 @@ BEGIN
         rating_count = rating_count + 1
     WHERE id = target_mod_id;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- ---- RLS ----
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -164,9 +170,11 @@ CREATE OR REPLACE FUNCTION is_admin() RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin');
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP POLICY IF EXISTS "Profiles access" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles read own or admin" ON public.profiles;
+DROP POLICY IF EXISTS "Profiles admin write" ON public.profiles;
 DROP POLICY IF EXISTS "Anyone can view categories" ON public.categories;
 DROP POLICY IF EXISTS "Admins can manage categories" ON public.categories;
 DROP POLICY IF EXISTS "Anyone can view published mods" ON public.mods;
@@ -186,7 +194,12 @@ DROP POLICY IF EXISTS "Anyone can view game requests" ON public.game_requests;
 DROP POLICY IF EXISTS "Anyone can send game requests" ON public.game_requests;
 DROP POLICY IF EXISTS "Admins can manage game requests" ON public.game_requests;
 
-CREATE POLICY "Profiles access" ON public.profiles FOR ALL USING (auth.uid() = id OR is_admin());
+-- v3 SECURITY FIX: السياسة القديمة "Profiles access" كانت FOR ALL ب auth.uid() = id،
+-- يعني أي واحد كيدير Sign up كان يقدر يزيد/يبدل سطره فـ profiles ويحط role = 'admin'
+-- ويولي أدمن. دابا: القراءة للمستخدم (سطرو) أو للأدمن، والكتابة (insert/update/delete) للأدمن فقط.
+-- (زيادة الأدمن الأول كتبقى من Table Editor كيف فـ README، حيت هو كيتجاوز RLS.)
+CREATE POLICY "Profiles read own or admin" ON public.profiles FOR SELECT USING (auth.uid() = id OR is_admin());
+CREATE POLICY "Profiles admin write" ON public.profiles FOR ALL USING (is_admin()) WITH CHECK (is_admin());
 CREATE POLICY "Anyone can view categories" ON public.categories FOR SELECT USING (true);
 CREATE POLICY "Admins can manage categories" ON public.categories FOR ALL USING (is_admin());
 CREATE POLICY "Anyone can view published mods" ON public.mods FOR SELECT USING (is_published = true OR is_admin());

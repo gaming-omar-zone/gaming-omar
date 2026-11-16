@@ -4,6 +4,7 @@
 
 let categoriesList = [];
 let adminMods = [];
+let editingMod = null; // السطر الكامل للعبة اللي كتتعدل (null = إضافة جديدة)
 
 // v2: escape DB text before innerHTML (XSS fix)
 function esc(s) {
@@ -42,7 +43,7 @@ function showLoginView() {
 function showDashboardView(user) {
     document.getElementById('loginView').style.display = 'none';
     document.getElementById('dashboardView').style.display = 'block';
-    document.getElementById('userEmailTag').innerHTML = `<i class="fa-solid fa-user-shield"></i> ${user.email}`;
+    document.getElementById('userEmailTag').innerHTML = `<i class="fa-solid fa-user-shield"></i> ${esc(user.email)}`;
 
     loadAdminCategories();
     loadAdminMods();
@@ -151,20 +152,40 @@ window.promptAddCategory = async function() {
 };
 
 window.deleteCategory = async function(id) {
-    if (!confirm("هل أنت متأكد من حذف هذا القسم؟")) return;
+    const inside = adminMods.filter(m => m.category_id === id).length;
+    const warn = inside > 0
+        ? `هاد القسم فيه ${inside} لعبة/مود. إلا مسحتيه غادي يبقاو بلا تصنيف. متأكد؟`
+        : "هل أنت متأكد من حذف هذا القسم؟";
+    if (!confirm(warn)) return;
     const { error } = await window.supabaseClient.from('categories').delete().eq('id', id);
     if (error) alert(error.message);
     else loadAdminCategories();
 };
 
 async function loadAdminMods() {
-    const { data: mods, error } = await window.supabaseClient
-        .from('mods')
-        .select('*, categories(name)')
-        .order('created_at', { ascending: false });
-
-    if (error) return;
-    adminMods = mods || [];
+    // Supabase كيرجع 1000 سطر فقط فكل طلب — خاصنا نجيبو الصفحات وحدة بوحدة
+    // وإلا الألعاب اللي فوق 1000 ما غاديش تبان فالأدمن والإحصائيات غاتكون غالطة.
+    let mods = [];
+    let from = 0;
+    const PAGE = 1000;
+    for (;;) {
+        const { data: page, error } = await window.supabaseClient
+            .from('mods')
+            .select('*, categories(name)')
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: false }) // tie-breaker باش الصفحات ما يتكررو
+            .range(from, from + PAGE - 1);
+        if (error) {
+            console.error('Admin mods error:', error);
+            const tb = document.getElementById('modsTableBody');
+            if (tb) tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#ff8a8a;padding:20px;">تعذر جلب الألعاب: ' + esc(error.message) + '</td></tr>';
+            return;
+        }
+        mods = mods.concat(page || []);
+        if (!page || page.length < PAGE) break;
+        from += PAGE;
+    }
+    adminMods = mods;
 
     document.getElementById('statTotalMods').textContent = adminMods.length;
     const totalDownloads = adminMods.reduce((sum, m) => sum + (m.download_count || 0), 0);
@@ -220,6 +241,7 @@ window.toggleDownloadFields = function() {
 };
 
 window.openModFormModal = function() {
+    editingMod = null;
     document.getElementById('modForm').reset();
     document.getElementById('editModId').value = '';
     document.getElementById('modFormTitle').textContent = 'إضافة مود جديد';
@@ -275,7 +297,8 @@ window.handleSaveMod = async function(e) {
             const modBinary = document.getElementById('formModBinaryFile').files[0];
             if (modBinary) {
                 file_url = await uploadToStorage(modBinary, 'mod-files');
-            } else if (!id) {
+            } else if (!(id && editingMod && editingMod.id === id && editingMod.file_url)) {
+                // إضافة جديدة، ولا تعديل بدّل النوع لـ storage وما عندو حتى ملف قديم
                 throw new Error("يجب اختيار ملف الـ ZIP أو APK لرفعه.");
             }
         } else {
@@ -296,12 +319,8 @@ window.handleSaveMod = async function(e) {
             link_mega: document.getElementById('formLinkMega').value.trim() || null,
             is_published: document.getElementById('formIsPublished')?.checked ?? true,
         };
+        // update() كيبدّل غير الأعمدة اللي فـ payload، يعني الملف القديم كيبقى إلا ما رفعتيش جديد
         if (file_url) payload.file_url = file_url;
-        else if (id) {
-            // editing without uploading a new file: keep the old one
-            const old = adminMods.find(m => m.id === id);
-            if (old?.file_url) payload.file_url = old.file_url;
-        }
         if (external_url) payload.external_url = external_url;
 
         let res;
@@ -332,9 +351,12 @@ window.deleteMod = async function(id) {
 };
 
 window.editMod = async function(id) {
-    const { data: mod } = await window.supabaseClient.from('mods').select('*').eq('id', id).single();
-    if (!mod) return;
+    const { data: mod, error: editErr } = await window.supabaseClient.from('mods').select('*').eq('id', id).single();
+    if (editErr || !mod) { alert('تعذر جلب بيانات اللعبة: ' + (editErr ? editErr.message : 'غير موجودة')); return; }
 
+    // reset: بلا هادي الملفات (صورة/APK) اللي اخترتي فتعديل سابق كتبقى فالفورم وكتتحمل فاللعبة الغالطة
+    editingMod = mod;
+    document.getElementById('modForm').reset();
     document.getElementById('editModId').value = mod.id;
     document.getElementById('formModTitle').value = mod.title || '';
     document.getElementById('formModCategory').value = mod.category_id || '';

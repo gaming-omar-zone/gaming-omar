@@ -169,6 +169,7 @@ window.toggleFavoritesFilter = function() {
     showingFavorites = !showingFavorites;
     const favBtn = document.getElementById('favFilterBtn');
     if (showingFavorites) {
+        selectedCategory = 'all'; // وإلا كتبقى المفضلة محصورة فآخر تصنيف تختار
         if (favBtn) favBtn.classList.add('active');
         document.querySelectorAll('.filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
     } else {
@@ -181,6 +182,7 @@ window.toggleFavoritesFilter = function() {
 
 window.showFavoritesOnly = function() {
     showingFavorites = true;
+    selectedCategory = 'all';
     const favBtn = document.getElementById('favFilterBtn');
     if (favBtn) favBtn.classList.add('active');
     document.querySelectorAll('.filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
@@ -224,6 +226,13 @@ async function loadSettings() {
 }
 
 async function loadCategories() {
+    // زر "الكل" خاصو يخدم حتى إلا فشل جلب التصنيفات
+    const allBtn = document.querySelector('.filter-btn[data-category="all"]');
+    if (allBtn) {
+        allBtn.onclick = function() {
+            filterByCategory('all', this);
+        };
+    }
     try {
         const { data: categories, error } = await window.supabaseClient
             .from('categories')
@@ -249,18 +258,16 @@ async function loadCategories() {
                 const a = document.createElement('a');
                 a.href = '#mods';
                 a.textContent = cat.name;
-                a.onclick = () => filterByCategory(cat.id);
+                a.onclick = (ev) => {
+                    ev.preventDefault();
+                    switchView('library'); // خاصنا نرجعو للرئيسية إلا كان الزائر فصفحة من نحن/اتصل بنا
+                    filterByCategory(cat.id, btn);
+                };
                 li.appendChild(a);
                 footerCats.appendChild(li);
             }
         });
 
-        const allBtn = document.querySelector('.filter-btn[data-category="all"]');
-        if (allBtn) {
-            allBtn.onclick = function() {
-                filterByCategory('all', this);
-            };
-        }
     } catch (e) {
         console.error("Categories error:", e);
     }
@@ -285,6 +292,7 @@ async function loadMods() {
                 .select('*, categories(name)')
                 .eq('is_published', true)
                 .order('created_at', { ascending: false })
+                .order('id', { ascending: false }) // tie-breaker: بلا هادي الصفحات يمكن تتكرر/تنقص عناصر عندها نفس created_at
                 .range(from, from + PAGE - 1);
             if (error) throw error;
             all = all.concat(page || []);
@@ -400,14 +408,21 @@ window.handleGameRequest = async function(e) {
     const gameType = document.getElementById('reqGameType').value;
     const details = document.getElementById('reqDetails').value.trim();
     if (name.length < 2 || gameTitle.length < 2) return;
-    const { error } = await window.supabaseClient.from('game_requests').insert([{
-        name, game_title: gameTitle, game_type: gameType, details: details || null
-    }]);
-    if (error) { alert('تعذر إرسال الطلب: ' + error.message); return; }
-    e.target.reset();
-    const ok = document.getElementById('reqSuccess');
-    if (ok) { ok.style.display = 'block'; setTimeout(() => { ok.style.display = 'none'; }, 5000); }
-    loadGameRequests();
+    const form = e.target;
+    const btn = form.querySelector('button[type="submit"]');
+    if (btn) btn.disabled = true; // كيمنع الإرسال مرتين
+    try {
+        const { error } = await window.supabaseClient.from('game_requests').insert([{
+            name, game_title: gameTitle, game_type: gameType, details: details || null
+        }]);
+        if (error) { alert('تعذر إرسال الطلب: ' + error.message); return; }
+        form.reset();
+        const ok = document.getElementById('reqSuccess');
+        if (ok) { ok.style.display = 'block'; setTimeout(() => { ok.style.display = 'none'; }, 5000); }
+        loadGameRequests();
+    } finally {
+        if (btn) btn.disabled = false;
+    }
 };
 
 function applyCurrentFilters() {
@@ -588,22 +603,38 @@ function setupSearch() {
     }
 }
 
+// يقبل غير روابط http/https (كيمنع javascript: وما شابه)
+function safeUrl(u) {
+    try {
+        const x = new URL(String(u || '').trim());
+        return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : '';
+    } catch (e) {
+        return '';
+    }
+}
+
 function getYouTubeEmbedUrl(url) {
     if (!url) return null;
-    const cleanUrl = url.trim();
-    let videoId = null;
-
-    if (cleanUrl.includes('youtu.be/')) {
-        videoId = cleanUrl.split('youtu.be/')[1].split('?')[0].split('&')[0];
-    } else if (cleanUrl.includes('youtube.com/shorts/')) {
-        videoId = cleanUrl.split('youtube.com/shorts/')[1].split('?')[0].split('&')[0];
-    } else if (cleanUrl.includes('watch?v=')) {
-        videoId = cleanUrl.split('watch?v=')[1].split('&')[0];
-    } else if (cleanUrl.includes('embed/')) {
-        videoId = cleanUrl.split('embed/')[1].split('?')[0];
+    const clean = String(url).trim();
+    let id = null;
+    try {
+        const u = new URL(/^https?:\/\//i.test(clean) ? clean : 'https://' + clean);
+        const host = u.hostname.replace(/^(www\.|m\.)/, '');
+        if (host === 'youtu.be') {
+            id = u.pathname.slice(1).split('/')[0];
+        } else if (host === 'youtube.com' || host === 'youtube-nocookie.com') {
+            if (u.pathname === '/watch') {
+                id = u.searchParams.get('v');
+            } else {
+                const m = u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?]+)/);
+                if (m) id = m[1];
+            }
+        }
+    } catch (e) {
+        return null;
     }
-
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=0` : null;
+    // معرّف يوتيوب = 11 حرف بالضبط؛ هاد التحقق كيمنع كسر الـ HTML
+    return id && /^[\w-]{11}$/.test(id) ? `https://www.youtube.com/embed/${id}?autoplay=0` : null;
 }
 
 // 3. فتح تفاصيل اللعبة وتشغيل عداد الـ 7 ثوانٍ
@@ -611,6 +642,12 @@ window.openDetails = async function(modId) {
     const mod = allMods.find(m => m.id === modId);
     if (!mod) return;
     activeMod = mod;
+
+    // نفرّغو تعليقات اللعبة السابقة قبل ما يبان المودال
+    const prevComments = document.getElementById('commentsList');
+    if (prevComments) prevComments.innerHTML = '';
+    const prevCount = document.getElementById('commentsCount');
+    if (prevCount) prevCount.textContent = '0';
 
     document.getElementById('modalTitle').textContent = mod.title || 'لعبة أندرويد';
     document.getElementById('modalBadge').textContent = mod.categories ? mod.categories.name : 'ألعاب أندرويد';
@@ -637,7 +674,7 @@ window.openDetails = async function(modId) {
     if (embedUrl) {
         mediaBox.innerHTML = `
             <div class="video-responsive">
-                <iframe src="${embedUrl}" allowfullscreen></iframe>
+                <iframe src="${embedUrl}" title="فيديو المعاينة" loading="lazy" allowfullscreen></iframe>
             </div>
         `;
     } else {
@@ -665,7 +702,7 @@ window.openDetails = async function(modId) {
     document.getElementById('modalDesc').textContent = mod.description || '';
 
     // تجهيز رابط التحميل المباشر
-    const primaryUrl = mod.download_type === 'storage' ? mod.file_url : mod.external_url;
+    const primaryUrl = safeUrl(mod.download_type === 'storage' ? mod.file_url : mod.external_url);
     const directBtn = document.getElementById('modalDirectDownloadBtn');
     if (directBtn) {
         directBtn.href = primaryUrl || '#';
@@ -677,16 +714,16 @@ window.openDetails = async function(modId) {
     const megaBtn = document.getElementById('megaDownloadLink');
     let hasMirrors = false;
 
-    if (mod.link_drive && mod.link_drive.trim().length > 5) {
-        driveBtn.href = mod.link_drive.trim();
+    if (safeUrl(mod.link_drive)) {
+        driveBtn.href = safeUrl(mod.link_drive);
         driveBtn.style.display = 'flex';
         hasMirrors = true;
     } else {
         driveBtn.style.display = 'none';
     }
 
-    if (mod.link_mega && mod.link_mega.trim().length > 5) {
-        megaBtn.href = mod.link_mega.trim();
+    if (safeUrl(mod.link_mega)) {
+        megaBtn.href = safeUrl(mod.link_mega);
         megaBtn.style.display = 'flex';
         hasMirrors = true;
     } else {
@@ -723,11 +760,12 @@ window.openDetails = async function(modId) {
         }
     }, 1000);
 
-    await loadComments(mod.id);
-
+    // المودال كيبان أولاً (والعداد كيبدا معاه)، والتعليقات كيتحملو من بعد
     const modal = document.getElementById('modModal');
     if (modal) modal.classList.add('show');
     document.body.style.overflow = 'hidden';
+
+    loadComments(mod.id);
 };
 
 window.closeModal = function() {
@@ -746,16 +784,17 @@ window.handleBackdropClick = function(e) {
 // 4. نقرة التحميل
 window.handleDownloadClick = async function(e) {
     if (!activeMod) return;
-    const primaryUrl = activeMod.download_type === 'storage' ? activeMod.file_url : activeMod.external_url;
+    const primaryUrl = safeUrl(activeMod.download_type === 'storage' ? activeMod.file_url : activeMod.external_url);
     
-    if (!primaryUrl || primaryUrl === '#') {
+    if (!primaryUrl) {
         if (e) e.preventDefault();
         alert("عذراً، لم يقم الأدمن بإضافة رابط تحميل لهذا الملف بعد!");
         return;
     }
 
     try {
-        await window.supabaseClient.rpc('increment_mod_download', { target_mod_id: activeMod.id });
+        const { error } = await window.supabaseClient.rpc('increment_mod_download', { target_mod_id: activeMod.id });
+        if (error) throw error;
         activeMod.download_count = (activeMod.download_count || 0) + 1;
         const dlSpan = document.getElementById('modalDownloads');
         if (dlSpan) dlSpan.textContent = activeMod.download_count;
@@ -773,12 +812,14 @@ window.reportCurrentMod = async function() {
                 { mod_id: activeMod.id, mod_title: activeMod.title }
             ]);
             if (error) {
-                alert("تم تسجيل بلاغك مسبقاً، شكراً لتعاونك!");
+                console.error("Report error:", error);
+                alert("تعذر إرسال البلاغ حالياً، حاول مرة أخرى لاحقاً.");
             } else {
                 alert("شكراً لك! تم إرسال البلاغ إلى الأدمن ليتم تجديد الرابط فوراً.");
             }
         } catch (err) {
-            alert("تم إرسال البلاغ بنجاح!");
+            console.error("Report error:", err);
+            alert("تعذر إرسال البلاغ حالياً، حاول مرة أخرى لاحقاً.");
         }
     }
 };
@@ -794,14 +835,11 @@ function setupInteractiveStars() {
     stars.forEach(star => {
         star.addEventListener('click', async () => {
             const val = parseInt(star.getAttribute('data-val'));
-            stars.forEach((s, idx) => {
-                if (idx < val) s.classList.add('active');
-                else s.classList.remove('active');
-            });
 
             if (!activeMod) return;
             const rated = JSON.parse(localStorage.getItem('gaming_omar_rated') || '{}');
             if (rated[activeMod.id]) {
+                paintStars(rated[activeMod.id]); // نبقاو نبينو التقييم القديم، ماشي النجمة اللي ضغط عليها
                 alert('قيّمت هذه اللعبة من قبل (' + rated[activeMod.id] + ' نجوم). شكراً لك!');
                 return;
             }
@@ -822,10 +860,12 @@ function setupInteractiveStars() {
                     document.getElementById('modalRatingScore').textContent = Number(data.rating_avg).toFixed(1);
                     document.getElementById('modalRatingVotes').textContent = data.rating_count;
                     renderModsGrid(applyCurrentFilters());
+                    renderHomeSections();
                 }
                 alert(`شكراً لك! تم تسجيل تقييمك (${val} نجوم) بنجاح.`);
             } catch (e) {
                 console.error("Rating error:", e);
+                paintStars(rated[activeMod.id] || 0); // رجّع النجوم كيف كانت
                 alert('فشل تسجيل التقييم: ' + (e.message || 'خطأ غير معروف'));
             }
         });
@@ -844,6 +884,9 @@ async function loadComments(modId) {
             .select('*')
             .eq('mod_id', modId)
             .order('created_at', { ascending: false });
+
+        // إلا الزائر بدّل اللعبة قبل ما توصل التعليقات، ما نكتبوش فوق تعليقات اللعبة الجديدة
+        if (!activeMod || activeMod.id !== modId) return;
 
         if (countSpan) countSpan.textContent = comments ? comments.length : 0;
         list.innerHTML = '';
@@ -888,6 +931,8 @@ window.handlePostComment = async function(e) {
         return;
     }
 
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true; // كيمنع التعليق يتبعت مرتين
     try {
         const { error } = await window.supabaseClient.from('comments').insert([
             { mod_id: activeMod.id, author_name, content }
@@ -901,6 +946,8 @@ window.handlePostComment = async function(e) {
         }
     } catch (err) {
         alert("حدث خطأ أثناء إرسال التعليق.");
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
     }
 };
 

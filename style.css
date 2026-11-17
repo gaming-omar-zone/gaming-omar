@@ -1734,15 +1734,3 @@ body {
 #gamesGrid .rail-scroll { gap: 10px; margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; }
 #gamesGrid .rail-card { flex-basis: clamp(88px, calc((100vw - 32px) / 3.7), 190px); }
 #gamesGrid .rail-arrow { left: 0; top: 42%; }
-
-/* v5.2 — تقصير بطاقات المكتبة/المودات: بلا فراغ تحت الزر، وزر وحشو أصغر فالهاتف */
-.mod-card { height: auto; min-height: 0; contain-intrinsic-size: auto 300px; }
-@media (max-width: 768px) {
-  .mods-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; grid-auto-rows: auto; }
-  .mod-card .card-content { flex-grow: 0; padding: 10px; }
-  .mod-card .card-desc { flex-grow: 0; margin-bottom: 8px; }
-  .mod-card .card-title { font-size: .95rem; margin-bottom: 6px; }
-  .mod-card .card-meta { margin-bottom: 8px; padding-top: 8px; }
-  .mod-card .btn-block { padding: 8px 6px; font-size: .8rem; white-space: nowrap; }
-  .mod-card .btn-block i { display: none; }
-}

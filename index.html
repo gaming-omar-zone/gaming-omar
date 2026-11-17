@@ -567,13 +567,14 @@
     </div>
   </footer>
 
-  <!-- شريط التنقل السفلي (كيبان فالهاتف فقط) — 5 عناصر فقط: الرئيسية، بحث، الألعاب، المودات، المكتبة -->
+  <!-- شريط التنقل السفلي (كيبان فالهاتف فقط) — 6 عناصر: الرئيسية، بحث، الألعاب، المودات، المكتبة، المطور (كيحل نافذة "تعريف بالمطور") -->
   <nav class="bottom-nav" aria-label="التنقل">
     <button class="bn-item active" data-view="home" onclick="switchView('home')"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
     <button class="bn-item" data-view="search" onclick="goToSearch()"><i class="fa-solid fa-magnifying-glass"></i><span>بحث</span></button>
     <button class="bn-item" data-view="games" onclick="switchView('games')"><i class="fa-solid fa-gamepad"></i><span>الألعاب</span></button>
     <button class="bn-item" data-view="mods" onclick="switchView('mods')"><i class="fa-solid fa-wrench"></i><span>المودات</span></button>
     <button class="bn-item" data-view="library" onclick="switchView('library')"><i class="fa-solid fa-book-open"></i><span>المكتبة</span></button>
+    <button class="bn-item" onclick="openDevModal()" aria-haspopup="dialog"><i class="fa-solid fa-code"></i><span>المطور</span></button>
   </nav>
 
   <!-- v6.2.1 — ?v= كيكسر كاش المتصفح: app.js كان كيتحمل بنفس الاسم،

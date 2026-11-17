@@ -2,41 +2,46 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
   <title>Gaming Omar | تحميل ألعاب أندرويد مهكرة ومودات GTA SA الأصلية</title>
   <meta name="description" content="موقع Gaming Omar الرسمي لتحميل أحدث ألعاب الأندرويد المهكرة والأوفلاين، وأقوى مودات GTA San Andreas بروابط مباشرة ومفحوصة 100%.">
   <meta name="keywords" content="العاب اندرويد مهكرة, مودات gta sa, تحميل gta san andreas للاندرويد, apk mod, Gaming Omar">
+  <link rel="canonical" href="https://gaming-omar-zone.github.io/gaming-omar/">
   <meta property="og:title" content="Gaming Omar | منصة ألعاب الأندرويد ومودات GTA SA">
   <meta property="og:description" content="حمل أحدث ألعاب الأندرويد ومودات GTA San Andreas بروابط مباشرة وسريعة.">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200">
+  <meta property="og:url" content="https://gaming-omar-zone.github.io/gaming-omar/">
+  <meta property="og:image" content="https://gaming-omar-zone.github.io/gaming-omar/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#05070a">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
   <link rel="stylesheet" href="style.css">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 </head>
 <body>
 
   <!-- زر التيليجرام العائم المباشر لقناتك -->
-  <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" class="floating-community-btn" title="انضم لقناتنا الرسمية على التيليجرام">
+  <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="floating-community-btn" title="انضم لقناتنا الرسمية على التيليجرام">
     <i class="fa-brands fa-telegram"></i>
   </a>
 
   <!-- شريط التنقل العلوي -->
   <header class="navbar">
     <div class="nav-container">
-      <div class="logo" onclick="switchView('home')">
+      <button class="logo" onclick="switchView('home')" aria-label="الصفحة الرئيسية">
         <i class="fa-solid fa-gamepad logo-icon"></i>
         <span>Gaming <span class="highlight">Omar</span></span>
-      </div>
+      </button>
 
       <div class="nav-actions">
         <a class="nav-search-btn" href="admin.html" aria-label="لوحة الأدمن"><i class="fa-solid fa-lock"></i></a>
@@ -77,7 +82,7 @@
           <button class="btn btn-secondary" onclick="showFavoritesOnly()">
             <i class="fa-solid fa-heart" style="color:#ff4757;"></i> المفضلة (<span id="favCount">0</span>)
           </button>
-          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" class="btn btn-secondary" style="background: rgba(0, 136, 204, 0.2); border-color: #0088cc;">
+          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="background: rgba(0, 136, 204, 0.2); border-color: #0088cc;">
             <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> قناتنا تلغرام
           </a>
         </div>
@@ -103,7 +108,7 @@
         </div>
         <button class="btn btn-secondary show-all-btn" onclick="showAllGames()">عرض كل الألعاب <i class="fa-solid fa-arrow-left"></i></button>
       </div>
-      <div class="rails" id="gamesGrid"></div>
+      <div id="gamesGrid"></div>
     </section>
 
     <!-- قسم مودات GTA SA -->
@@ -201,13 +206,13 @@
       
       <h3 style="color:#fff; margin: 20px 0 8px;"><i class="fa-solid fa-globe highlight"></i> تابعنا وتواصل معنا مباشرة:</h3>
       <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;">
-        <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" class="btn btn-secondary">
+        <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
           <i class="fa-brands fa-telegram" style="color: #0088cc;"></i> قناة التيليجرام
         </a>
-        <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" class="btn btn-secondary">
+        <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
           <i class="fa-brands fa-youtube" style="color: #ff0000;"></i> قناة اليوتيوب
         </a>
-        <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" class="btn btn-secondary">
+        <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
           <i class="fa-brands fa-facebook" style="color: #1877f2;"></i> صفحة الفيسبوك
         </a>
       </div>
@@ -221,15 +226,15 @@
     <form class="contact-form" onsubmit="handlePublicContact(event)">
       <div class="form-group">
         <label>الاسم</label>
-        <input type="text" id="contactName" required placeholder="أدخل اسمك الكريم">
+        <input type="text" id="contactName" required maxlength="40" placeholder="أدخل اسمك الكريم">
       </div>
       <div class="form-group">
         <label>البريد الإلكتروني</label>
-        <input type="email" id="contactEmail" required placeholder="name@example.com">
+        <input type="email" id="contactEmail" required maxlength="120" placeholder="name@example.com">
       </div>
       <div class="form-group">
         <label>الرسالة</label>
-        <textarea id="contactMsg" rows="5" required placeholder="اكتب طلبك أو استفسارك هنا..."></textarea>
+        <textarea id="contactMsg" rows="5" required maxlength="2000" placeholder="اكتب طلبك أو استفسارك هنا..."></textarea>
       </div>
       <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال</button>
     </form>
@@ -241,15 +246,16 @@
   <!-- صفحة طلبات الألعاب -->
   <section id="viewRequests" class="container page-card" style="display: none; margin: 40px auto;">
     <h2 class="section-title"><i class="fa-solid fa-clipboard-list highlight"></i> اطلب لعبة أو مود</h2>
-    <p style="color: var(--text-gray); margin: 8px 0 20px;">ما لقيتيش اللعبة اللي كتقلب عليها؟ طلبها هنا، وغادي نجيبوها ليك إن شاء الله.</p>
+    <p style="color: var(--text-gray); margin: 8px 0 6px;">ما لقيتيش اللعبة اللي كتقلب عليها؟ طلبها هنا، وغادي نجيبوها ليك إن شاء الله.</p>
+    <p style="color: var(--text-gray); font-size: 0.85rem; margin: 0 0 20px;">⚠️ ما تكتبش معلومات شخصية (إيميل، رقم تيليفون، تيليجرام) فالطلب — اللائحة العامة كتبين غير اسم اللعبة والنوع والحالة.</p>
     <form class="contact-form" onsubmit="handleGameRequest(event)">
       <div class="form-group">
         <label>اسمك</label>
-        <input type="text" id="reqName" required placeholder="اسمك الكريم">
+        <input type="text" id="reqName" required maxlength="40" placeholder="اسمك الكريم">
       </div>
       <div class="form-group">
         <label>اسم اللعبة أو المود</label>
-        <input type="text" id="reqGameTitle" required placeholder="مثال: GTA San Andreas مود سيارات">
+        <input type="text" id="reqGameTitle" required maxlength="120" placeholder="مثال: GTA San Andreas مود سيارات">
       </div>
       <div class="form-group">
         <label>النوع</label>
@@ -262,7 +268,7 @@
       </div>
       <div class="form-group">
         <label>تفاصيل إضافية (اختياري)</label>
-        <textarea id="reqDetails" rows="3" placeholder="رابط، إصدار، ولا أي تفاصيل..."></textarea>
+        <textarea id="reqDetails" rows="3" maxlength="500" placeholder="رابط، إصدار، ولا أي تفاصيل..."></textarea>
       </div>
       <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> إرسال الطلب</button>
     </form>
@@ -276,8 +282,8 @@
 
   <!-- نافذة التفاصيل والتحميل المنبثقة -->
   <div class="modal-backdrop" id="modModal" onclick="handleBackdropClick(event)">
-    <div class="modal-dialog">
-      <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" aria-label="إغلاق" onclick="closeModal()">&times;</button>
       
       <div class="modal-header">
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -287,7 +293,7 @@
         <h2 id="modalTitle" style="margin-top: 8px;">اسم اللعبة / المود</h2>
       </div>
 
-      <div class="modal-body">
+      <div>
         <!-- مشغل فيديو يوتيوب أو صورة المعاينة -->
         <div id="modalMediaContainer">
           <img id="modalImg" src="" alt="صورة المعاينة" class="modal-img">
@@ -383,8 +389,8 @@
           <div class="comments-list" id="commentsList"></div>
           
           <form onsubmit="handlePostComment(event)" style="display: flex; gap: 8px; margin-top: 10px;">
-            <input type="text" id="commentAuthor" required placeholder="اسمك" style="width: 30%;">
-            <input type="text" id="commentText" required placeholder="اكتب رأيك في اللعبة..." style="flex-grow: 1;">
+            <input type="text" id="commentAuthor" required maxlength="40" placeholder="اسمك" style="width: 30%;">
+            <input type="text" id="commentText" required maxlength="1000" placeholder="اكتب رأيك في اللعبة..." style="flex-grow: 1;">
             <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-paper-plane"></i></button>
           </form>
         </div>
@@ -395,7 +401,7 @@
   <!-- التذييل الرسمي بروابط حساباتك الحقيقية التي تفتح بنقرة واحدة -->
   <footer class="footer">
     <div class="container footer-content">
-      <div class="footer-brand">
+      <div>
         <div class="logo">
           <i class="fa-solid fa-gamepad logo-icon"></i>
           <span>Gaming <span class="highlight">Omar</span></span>
@@ -406,16 +412,16 @@
         <h4>الأقسام الرئيسية</h4>
         <ul id="footerCats"></ul>
       </div>
-      <div class="footer-social">
+      <div>
         <h4>مجتمع Gaming Omar</h4>
         <div class="social-icons">
-          <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" title="قناة يوتيوب الرسمية">
+          <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" title="قناة يوتيوب الرسمية">
             <i class="fa-brands fa-youtube"></i>
           </a>
-          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" title="قناة التيليجرام الرسمية">
+          <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" title="قناة التيليجرام الرسمية">
             <i class="fa-brands fa-telegram"></i>
           </a>
-          <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" onclick="window.open(this.href, '_blank', 'noopener,noreferrer'); return false;" title="صفحة الفيسبوك الرسمية">
+          <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" title="صفحة الفيسبوك الرسمية">
             <i class="fa-brands fa-facebook-f"></i>
           </a>
         </div>
@@ -426,15 +432,13 @@
     </div>
   </footer>
 
-  <!-- شريط التنقل السفلي (كيبان فالهاتف فقط) -->
+  <!-- شريط التنقل السفلي (كيبان فالهاتف فقط) — 5 عناصر فقط: الرئيسية، بحث، الألعاب، المودات، المكتبة -->
   <nav class="bottom-nav" aria-label="التنقل">
     <button class="bn-item active" data-view="home" onclick="switchView('home')"><i class="fa-solid fa-house"></i><span>الرئيسية</span></button>
-    <button class="bn-item" onclick="goToSearch()"><i class="fa-solid fa-magnifying-glass"></i><span>بحث</span></button>
+    <button class="bn-item" data-view="search" onclick="goToSearch()"><i class="fa-solid fa-magnifying-glass"></i><span>بحث</span></button>
     <button class="bn-item" data-view="games" onclick="switchView('games')"><i class="fa-solid fa-gamepad"></i><span>الألعاب</span></button>
     <button class="bn-item" data-view="mods" onclick="switchView('mods')"><i class="fa-solid fa-wrench"></i><span>المودات</span></button>
-    <button class="bn-item" data-view="requests" onclick="switchView('requests')"><i class="fa-solid fa-clipboard-list"></i><span>اطلب</span></button>
-    <button class="bn-item" data-view="about" onclick="switchView('about')"><i class="fa-solid fa-circle-info"></i><span>من نحن</span></button>
-    <button class="bn-item" data-view="contact" onclick="switchView('contact')"><i class="fa-solid fa-envelope"></i><span>اتصل</span></button>
+    <button class="bn-item" data-view="library" onclick="switchView('library')"><i class="fa-solid fa-book-open"></i><span>المكتبة</span></button>
   </nav>
 
   <script src="supabase-client.js"></script>

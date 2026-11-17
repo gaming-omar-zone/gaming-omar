@@ -55,6 +55,7 @@ function showDashboardView(user) {
 
 window.handleAdminLogin = async function(e) {
     e.preventDefault();
+    if (!window.supabaseClient) return; // v6.1 (Claude round 2) — CDN فشل: صندوق الخطأ باين أصلاً، ما تخليش الزر معلق
     const email = document.getElementById('adminEmail').value.trim();
     const password = document.getElementById('adminPassword').value;
     const btn = document.getElementById('loginBtn');
@@ -109,7 +110,13 @@ window.switchAdminTab = function(tabId) {
 };
 
 async function loadAdminCategories() {
-    const { data: categories } = await window.supabaseClient.from('categories').select('*').order('created_at', { ascending: true });
+    const { data: categories, error } = await window.supabaseClient.from('categories').select('*').order('created_at', { ascending: true });
+    // v6 (F-09) — إلا فشل الجلب، خلي الخيارات القديمة (بلا ما نفرغو الـ select
+    // ويتسيف category_id خاوي من بعد)
+    if (error) {
+        console.error('Admin categories error:', error);
+        return;
+    }
     categoriesList = categories || [];
 
     document.getElementById('statTotalCats').textContent = categoriesList.length;
@@ -130,7 +137,8 @@ async function loadAdminCategories() {
     });
 
     const select = document.getElementById('formModCategory');
-    select.innerHTML = '';
+    // v6 (F-09) — خيار "بلا تصنيف" باش تعديل لعبة بلا تصنيف ما يعيدش تصنيفها
+    select.innerHTML = '<option value="">— بلا تصنيف —</option>';
     categoriesList.forEach(c => {
         select.innerHTML += `<option value="${c.id}">${esc(c.name)}</option>`;
     });
@@ -152,6 +160,13 @@ window.promptAddCategory = async function() {
 };
 
 window.deleteCategory = async function(id) {
+    // v6 (F-07) — تصنيف "ألعاب أندرويد" ما يتمسحش: مسحو كيفرغ قسم الألعاب
+    // كامل (كل الألعاب كتبقى بلا تصنيف). كاين حتى trigger فـ v6 كيمنعو فالسيرفر.
+    const cat = categoriesList.find(c => c.id === id);
+    if ((cat && cat.slug === 'android-games') || id === '49fbd197-c507-40a4-b1f7-f740fae5b194') {
+        alert('هاد التصنيف ("ألعاب أندرويد") ما يمكنش يتمسح — قسم الألعاب كامل معتمد عليه.');
+        return;
+    }
     const inside = adminMods.filter(m => m.category_id === id).length;
     const warn = inside > 0
         ? `هاد القسم فيه ${inside} لعبة/مود. إلا مسحتيه غادي يبقاو بلا تصنيف. متأكد؟`
@@ -275,7 +290,10 @@ window.handleSaveMod = async function(e) {
     try {
         const id = document.getElementById('editModId').value;
         const title = document.getElementById('formModTitle').value.trim();
-        const category_id = document.getElementById('formModCategory').value;
+        // v6 (F-09) — خيار "بلا تصنيف" كيتسيف null (التصنيف يقدر يكون خاوي فالقاعدة)
+        const category_id = document.getElementById('formModCategory').value || null;
+        // v6.1 (Claude round 2) — عنصر جديد بلا تصنيف كيطيح فـ Mods بلا ما يبان؛ منعو
+        if (!id && !category_id) throw new Error('اختر تصنيفاً للعنصر الجديد.');
         const short_desc = document.getElementById('formModShortDesc').value.trim();
         const description = document.getElementById('formModFullDesc').value.trim();
         const file_size = document.getElementById('formModSize').value.trim();
@@ -334,7 +352,9 @@ window.handleSaveMod = async function(e) {
 
         closeModFormModal();
         loadAdminMods();
-        alert("تم حفظ ونشر المود بنجاح!");
+        // v6 (F-09) — الرسالة كتعتمد على واش تنشر ولا بقا مسودة
+        const published = document.getElementById('formIsPublished')?.checked ?? true;
+        alert(published ? "تم حفظ ونشر المود بنجاح!" : "تم حفظ المود كمسودة (غير منشور).");
     } catch (err) {
         alert("خطأ أثناء الحفظ: " + err.message);
     } finally {
@@ -343,11 +363,34 @@ window.handleSaveMod = async function(e) {
     }
 };
 
+// v6 (F-09) — مسح ملفات المود من التخزين إلا كانت مرفوعة فـ buckets
+// ديال المشروع (mod-images / mod-files). الروابط الخارجية ما كتتمسحش.
+async function deleteModStorageObjects(mod) {
+    try {
+        // v6.1 (Claude round 2) — مسح غير ملفات المشروع اللي ما كيستعملهاش مود آخر
+        const _base = SUPABASE_URL + '/storage/v1/object/public/';
+        const urls = [mod.image_url, mod.file_url].filter(Boolean).filter(u => String(u).startsWith(_base)).filter(u => !adminMods.some(m => m.id !== mod.id && (m.image_url === u || m.file_url === u)));
+        const byBucket = {};
+        for (const u of urls) {
+            const m = String(u).match(/\/storage\/v1\/object\/public\/([^\/]+)\/(.+)$/);
+            if (m) (byBucket[m[1]] = byBucket[m[1]] || []).push(decodeURIComponent(m[2]));
+        }
+        for (const [bucket, paths] of Object.entries(byBucket)) {
+            const { error } = await window.supabaseClient.storage.from(bucket).remove(paths);
+            if (error) console.error('Storage cleanup error:', bucket, error);
+        }
+    } catch (e) {
+        console.error('Storage cleanup error:', e);
+    }
+}
+
 window.deleteMod = async function(id) {
     if (!confirm("هل أنت متأكد من حذف هذا المود نهائياً؟")) return;
+    const mod = adminMods.find(m => m.id === id);
     const { error } = await window.supabaseClient.from('mods').delete().eq('id', id);
-    if (error) alert(error.message);
-    else loadAdminMods();
+    if (error) { alert(error.message); return; }
+    if (mod) await deleteModStorageObjects(mod); // best-effort: إلا فشل، السطر تمسح بلا ما يوقف
+    loadAdminMods();
 };
 
 window.editMod = async function(id) {
@@ -359,7 +402,11 @@ window.editMod = async function(id) {
     document.getElementById('modForm').reset();
     document.getElementById('editModId').value = mod.id;
     document.getElementById('formModTitle').value = mod.title || '';
-    document.getElementById('formModCategory').value = mod.category_id || '';
+    // v6.1 (Claude round 2) — إلا فشل تحميل التصنيفات، الـ select ما فيهش الخيار
+    // الحالي وقيمتو كتولي '' وكتسيف null؛ حافظ على التصنيف الحالي
+    const _catSel = document.getElementById('formModCategory');
+    _catSel.value = mod.category_id || '';
+    if (mod.category_id && _catSel.value !== mod.category_id) { _catSel.add(new Option('(التصنيف الحالي)', mod.category_id)); _catSel.value = mod.category_id; }
     document.getElementById('formIsOnline').value = String(!!mod.is_online);
     document.getElementById('formModShortDesc').value = mod.short_desc || '';
     document.getElementById('formModFullDesc').value = mod.description || '';
@@ -435,12 +482,14 @@ async function loadAdminReports() {
 window.loadAdminReports = loadAdminReports;
 
 window.resolveReport = async function(id) {
-    await window.supabaseClient.from('broken_links').update({ resolved: true }).eq('id', id);
+    const { error } = await window.supabaseClient.from('broken_links').update({ resolved: true }).eq('id', id);
+    if (error) { alert('فشل تحديث البلاغ: ' + error.message); return; }
     loadAdminReports();
 };
 window.deleteReport = async function(id) {
     if (!confirm('حذف هذا البلاغ؟')) return;
-    await window.supabaseClient.from('broken_links').delete().eq('id', id);
+    const { error } = await window.supabaseClient.from('broken_links').delete().eq('id', id);
+    if (error) { alert('فشل حذف البلاغ: ' + error.message); return; }
     loadAdminReports();
 };
 
@@ -467,12 +516,14 @@ async function loadContactMessages() {
 }
 window.loadContactMessages = loadContactMessages;
 window.markMessageRead = async function(id) {
-    await window.supabaseClient.from('contact_messages').update({ is_read: true }).eq('id', id);
+    const { error } = await window.supabaseClient.from('contact_messages').update({ is_read: true }).eq('id', id);
+    if (error) { alert('فشل تحديث الرسالة: ' + error.message); return; }
     loadContactMessages();
 };
 window.deleteMessage = async function(id) {
     if (!confirm('حذف هذه الرسالة؟')) return;
-    await window.supabaseClient.from('contact_messages').delete().eq('id', id);
+    const { error } = await window.supabaseClient.from('contact_messages').delete().eq('id', id);
+    if (error) { alert('فشل حذف الرسالة: ' + error.message); return; }
     loadContactMessages();
 };
 
@@ -510,11 +561,13 @@ async function loadGameRequestsAdmin() {
 }
 window.loadGameRequestsAdmin = loadGameRequestsAdmin;
 window.setRequestStatus = async function(id, status) {
-    await window.supabaseClient.from('game_requests').update({ status }).eq('id', id);
+    const { error } = await window.supabaseClient.from('game_requests').update({ status }).eq('id', id);
+    if (error) { alert('فشل تحديث الطلب: ' + error.message); return; }
     loadGameRequestsAdmin();
 };
 window.deleteGameRequest = async function(id) {
     if (!confirm('حذف هذا الطلب؟')) return;
-    await window.supabaseClient.from('game_requests').delete().eq('id', id);
+    const { error } = await window.supabaseClient.from('game_requests').delete().eq('id', id);
+    if (error) { alert('فشل حذف الطلب: ' + error.message); return; }
     loadGameRequestsAdmin();
 };

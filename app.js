@@ -9,10 +9,10 @@ let selectedSort = 'newest';
 let activeMod = null;
 let showingFavorites = false;
 let countdownTimer = null;
+let _voterId = null; // B1 — كاش معرّف الزائر: بلا هادي، متصفح بلا تخزين كيولّد معرّف جديد فكل نداء
 
 // v3.9 — قسم الألعاب بحدو والمودات بحدهم في الواجهة الرئيسية.
-// تصنيف "ألعاب أندرويد" في قاعدة البيانات (ثابت) — كل ما عداه مود GTA SA.
-const GAMES_CATEGORY_ID = '49fbd197-c507-40a4-b1f7-f740fae5b194';
+// تصنيف "ألعاب أندرويد" كيتحل وقت التشغيل من الـ slug (شوف gamesCategoryId()).
 const HOME_SHOWCASE_COUNT = 8; // المودات: صفّان (4 أعمدة × 2)
 const GAMES_RAIL_COUNT = 24; // الألعاب: 3 صفوف أفقية × 8 بطاقات
 const RAIL_ROWS = 3;
@@ -23,8 +23,70 @@ function esc(s) {
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
 }
+// B10 — طول بالنقاط (code points) ماشي وحدات UTF-16: إيموجي واحد
+// كيحسب 2 فـ JS (.length) ولكن 1 فـ Postgres (char_length)، فيقدر
+// يدوز التحقق ديال JS ويفشل فـ CHECK ديال قاعدة البيانات.
+const cplen = s => [...(s || '')].length;
 const PLACEHOLDER_IMG = 'data:image/svg+xml,' + encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360"><rect width="600" height="360" fill="#131518"/><text x="300" y="190" font-size="64" text-anchor="middle">🎮</text></svg>');
+
+// v6 (F-06) — localStorage محمي: التخزين يقدر يتبلوكا (متصفحات داخلية،
+// وضع خصوصية صارم، كوطا عامرة) أو الـ JSON يتخسر. بلا هاد الحماية
+// openDetails كيطيح قبل ما يتحل المودال. هاد الدوال كترجع القيمة
+// الافتراضية بدل ما ترمي استثناء.
+function readStore(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (raw === null || raw === undefined) return fallback;
+        const v = JSON.parse(raw);
+        // B6 — تحقق من النوع، ماشي غير من JSON: قيمة مخزنة 'null' ولا
+        // رقم/نص كترجع fallback بدل ما تطيّح openDetails/buildModCard.
+        const ok = Array.isArray(fallback) ? Array.isArray(v) : (v && typeof v === 'object' && !Array.isArray(v));
+        return ok ? v : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+function writeStore(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+// v6 (F-01) — معرّف عشوائي للزائر، كيتولد مرة وحدة وكيتحفظ.
+// كيتبعت مع التقييم والتحميل باش السيرفر يمنع التكرار (mod_votes).
+function getVoterId() {
+    // B1 — كاش فمتغير: إلا التخزين متبلوكا، نرجعو نفس معرّف الجلسة
+    // بدل ما نولّدو واحد جديد فكل نداء (كان كيكسر "صوت واحد لكل زائر").
+    if (_voterId) return _voterId;
+    let id = null;
+    try { id = localStorage.getItem('gaming_omar_voter'); } catch (e) { id = null; }
+    if (!id) {
+        id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+            : ('v-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10));
+        try { localStorage.setItem('gaming_omar_voter', id); } catch (e) { /* بلا تخزين: معرّف الجلسة فقط */ }
+    }
+    _voterId = id;
+    return id;
+}
+
+// v6 (F-07) — تصنيف "ألعاب أندرويد" كيتحل من التصنيفات المحملة حسب
+// الـ slug، ماشي UUID ثابت. إلا ما تحملوش التصنيفات، كنرجعو للـ UUID القديم.
+const GAMES_CATEGORY_ID_FALLBACK = '49fbd197-c507-40a4-b1f7-f740fae5b194';
+function gamesCategoryId() {
+    const cat = allCategories.find(c => c.slug === 'android-games');
+    return cat ? cat.id : GAMES_CATEGORY_ID_FALLBACK;
+}
+
+// v6 (F-16e) — روابط التحميل كتتعمر غير ملي يسالي العداد (بلا ما تكون
+// فالـ DOM قبل). v6 (F-15) — آخر عنصر كان فيه التركيز قبل المودال.
+let pendingDownload = null;
+let lastFocusedBeforeModal = null;
+let originalDocTitle = document.title;
+let originalMetaDesc = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const yearSpan = document.getElementById('yearSpan');
@@ -33,7 +95,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     updateFavoritesBadge();
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
     if (!window.supabaseClient) {
-        showLoadError('تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت وأعد المحاولة.');
+        // v6 (F-10) — فرّق بين مكتبة Supabase ما تحملاتش (CDN) وبين خطأ اتصال عادي
+        showLoadError(window.supabaseLoadError
+            ? 'تعذر تحميل مكتبة قاعدة البيانات (CDN). تحقق من الإنترنت وأعد تحميل الصفحة.'
+            : 'تعذر الاتصال بقاعدة البيانات. تحقق من الإنترنت وأعد المحاولة.');
         return;
     }
     const sortSel = document.getElementById('sortSelect');
@@ -41,11 +106,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectedSort = sortSel.value;
         renderModsGrid(applyCurrentFilters());
     });
-    await loadSettings();
-    await loadCategories();
-    await loadMods();
-    await loadTrending();
-    await loadGameRequests();
+    // v6 (F-05) — الطلبات الكبيرة كتمشي بالتوازي بدل التتابع؛
+// الرائج كيتحسب محلياً من allMods؛ طلبات الألعاب ما كتتجبدش
+    // عند البداية (switchView('requests') كتجيبها ملي كتحتاجها).
+    await Promise.all([loadSettings(), loadCategories(), loadMods()]);
+    // B3 — إعادة الرسم هنا (بعد ما تحملو التصنيفات): loadMods كيرسم
+    // داخلياً، ولكن تحت Promise.all يقدر gamesCategoryId() يرجع الـ UUID
+    // الاحتياطي إلا التصنيفات ما وصلوش بعد. B5 — renderTrending() تحيدات
+    // من هنا: دابا كتتنادى فآخر loadMods (شوف تحت).
+    // v6.1 (Claude round 2) — إلا فشل التحميل، ما ترسمش "لا نتائج" تحت صندوق الخطأ
+    if (allMods.length) { renderHomeSections(); renderModsGrid(applyCurrentFilters()); }
     setupSearch();
     setupInteractiveStars();
     handleDeepLink();
@@ -61,12 +131,11 @@ function handleDeepLink() {
             if (input) { input.value = q; renderModsGrid(applyCurrentFilters()); }
         }
         const gameId = params.get('game');
-        if (gameId && typeof allMods !== 'undefined') {
-            const mod = allMods.find(m => m.id === gameId);
-            if (mod) {
-                switchView('library');
-                setTimeout(() => window.openDetails(gameId), 400);
-            }
+        if (gameId) {
+            // v6 (F-04) — openDetails كتجيب الصف الكامل من السيرفر إلا ما كانش
+            // فالقائمة المختصرة، يعني الرابط العميق خدام حتى إلا ما كانش العنصر فالصفحة
+            switchView('library');
+            setTimeout(() => window.openDetails(gameId), 400);
         }
     } catch (e) { /* تجاهل أخطاء الرابط */ }
 }
@@ -111,6 +180,8 @@ window.switchView = function(viewName) {
 // زر البحث في القائمة العلوية: يهبط لصندوق البحث، يفتحو، ويوميض عليه
 window.goToSearch = function() {
     switchView('library');
+    // v6 (F-08) — تبويب "بحث" فالشريط السفلي كيتفعّل حتى هو
+    document.querySelectorAll('.bn-item[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === 'search'));
     setTimeout(() => {
         const input = document.getElementById('searchInput');
         const box = document.querySelector('.search-box');
@@ -137,11 +208,7 @@ function setupMobileNav() {
 
 // 1. المفضلة
 function getFavorites() {
-    try {
-        return JSON.parse(localStorage.getItem('gaming_omar_favs') || '[]');
-    } catch (e) {
-        return [];
-    }
+    return readStore('gaming_omar_favs', []);
 }
 
 function isFavorite(modId) {
@@ -151,15 +218,24 @@ function isFavorite(modId) {
 window.toggleFavorite = function(e, modId) {
     if (e) e.stopPropagation();
     let favs = getFavorites();
-    if (favs.includes(modId)) {
-        favs = favs.filter(id => id !== modId);
-    } else {
+    const nowFav = !favs.includes(modId);
+    if (nowFav) {
         favs.push(modId);
+    } else {
+        favs = favs.filter(id => id !== modId);
     }
-    localStorage.setItem('gaming_omar_favs', JSON.stringify(favs));
+    writeStore('gaming_omar_favs', favs);
     updateFavoritesBadge();
-    renderModsGrid(applyCurrentFilters());
-    renderHomeSections(); // v3.9 — حدّث قلوب أقسام الواجهة الرئيسية حتى هي
+    // v6 (F-16a) — بدّل كلاس القلب على كل زر ديال هاد المود (المكتبة +
+    // الرئيسية + الرائج) باش يبقاو متزامنين. إلا كان فلتر "المفضلة"
+    // مفعّل، خاص إعادة الرسم حتى هي باش العنصر يبان/يختفي.
+    // B8 — تبديل الكلاس كيدار ديما، ماشي غير إلا ما كانش فلتر المفضلة.
+    document.querySelectorAll(`[data-fav-id="${modId}"]`).forEach(btn => {
+        btn.classList.toggle('active', nowFav);
+    });
+    if (showingFavorites) {
+        renderModsGrid(applyCurrentFilters());
+    }
 };
 
 function updateFavoritesBadge() {
@@ -284,15 +360,18 @@ async function loadMods() {
 
     try {
         // Paginated fetch: Supabase REST caps one request at 1000 rows,
-        // and the library is now past 1000 items (1121 on 2026-11-16).
+        // and the library is now past 1000 items (1323 on 2026-11-17).
         // Without paging, the oldest items never reach the page.
+        // v6 (F-04) — القائمة كتجيب غير الأعمدة اللي كتبان فالبطاقات؛
+        // الوصف الكامل والروابط والمواصفات كتتجبد فـ openDetails للعنصر الواحد.
+        const LIST_COLUMNS = 'id, title, image_url, short_desc, category_id, file_size, game_version, is_online, download_count, rating_avg, rating_count, created_at, categories(name)';
         let all = [];
         let from = 0;
         const PAGE = 1000;
         for (;;) {
             const { data: page, error } = await window.supabaseClient
                 .from('mods')
-                .select('*, categories(name)')
+                .select(LIST_COLUMNS)
                 .eq('is_published', true)
                 .order('created_at', { ascending: false })
                 .order('id', { ascending: false }) // tie-breaker: بلا هادي الصفحات يمكن تتكرر/تنقص عناصر عندها نفس created_at
@@ -309,6 +388,10 @@ async function loadMods() {
         allMods = mods || [];
         renderModsGrid(applyCurrentFilters());
         renderHomeSections(); // v3.9 — عمّر قسمي الألعاب والمودات في الرئيسية
+        // B5 — الرائج كيتحسب من allMods، يعني خاصو يترسم من بعد كل تحميل
+        // ناجح (ماشي غير عند البداية): إلا فشل أول تحميل والزائر ضغط
+        // "إعادة المحاولة" (window.reloadMods)، الرائج ما كانش كيبان.
+        renderTrending();
     } catch (err) {
         if (loading) loading.style.display = 'none';
         console.error("Error loading mods:", err);
@@ -318,45 +401,39 @@ async function loadMods() {
 window.reloadMods = loadMods;
 
 // الرائج: أعلى 6 ألعاب/مودات حسب عدد التحميلات.
+// v6 (F-05) — كيتحسب محلياً من allMods (بلا طلب جديد للسيرفر).
 // القسم يبقى مخفياً إلا كان هناك عناصر (قاعدة خاوية أو خطأ).
-async function loadTrending() {
+function renderTrending() {
     const section = document.getElementById('trendingSection');
     const grid = document.getElementById('trendingGrid');
     if (!section || !grid) return;
-    try {
-        const { data: top, error } = await window.supabaseClient
-            .from('mods')
-            .select('id, title, image_url, download_count, rating_avg, rating_count, categories(name)')
-            .eq('is_published', true)
-            .order('download_count', { ascending: false })
-            .limit(6);
-        if (error || !top || top.length === 0) return;
-        grid.innerHTML = '';
-        top.forEach((mod, i) => {
-            const card = document.createElement('article');
-            card.className = 'trending-card';
-            card.innerHTML = `
-                <div class="trending-img-wrap">
-                    <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="trending-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-                    <span class="trending-rank">#${i + 1}</span>
+    const top = [...allMods]
+        .sort((a, b) => (b.download_count || 0) - (a.download_count || 0))
+        .slice(0, 6);
+    if (!top.length) return;
+    grid.innerHTML = '';
+    top.forEach((mod, i) => {
+        const card = document.createElement('article');
+        card.className = 'trending-card';
+        card.innerHTML = `
+            <div class="trending-img-wrap">
+                <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="trending-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+                <span class="trending-rank">#${i + 1}</span>
+            </div>
+            <div class="trending-info">
+                <h3 class="trending-title">${esc(mod.title)}</h3>
+                <div class="trending-meta">
+                    <span><i class="fa-solid fa-star" style="color:var(--star-gold);"></i> ${Number(mod.rating_avg ?? 5).toFixed(1)} (${mod.rating_count ?? 0})</span>
+                    <span><i class="fa-solid fa-download highlight"></i> ${mod.download_count ?? 0} تنزيل</span>
                 </div>
-                <div class="trending-info">
-                    <h3 class="trending-title">${esc(mod.title)}</h3>
-                    <div class="trending-meta">
-                        <span><i class="fa-solid fa-star" style="color:var(--star-gold);"></i> ${Number(mod.rating_avg ?? 5).toFixed(1)} (${mod.rating_count ?? 0})</span>
-                        <span><i class="fa-solid fa-download highlight"></i> ${mod.download_count ?? 0} تنزيل</span>
-                    </div>
-                    <button class="btn btn-primary btn-block btn-sm" onclick="openDetails('${esc(mod.id)}')">
-                        <i class="fa-solid fa-cloud-arrow-down"></i> تحميل
-                    </button>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-        section.style.display = 'block';
-    } catch (e) {
-        console.error('Error loading trending:', e);
-    }
+                <button class="btn btn-primary btn-block btn-sm" onclick="openDetails('${esc(mod.id)}')">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> تحميل
+                </button>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+    section.style.display = 'block';
 }
 
 // طلبات الألعاب: لائحة عامة + فورم الإرسال
@@ -375,9 +452,12 @@ async function loadGameRequests() {
     const list = document.getElementById('requestsList');
     if (!list) return;
     try {
+        // v6 (F-03) — اللائحة العامة كتقرا من العرض game_requests_public
+        // (العنوان + النوع + الحالة + التاريخ فقط). الاسم والتفاصيل
+        // ما كيبانوش للزوار — الأدمن كيشوفهم فلوحة التحكم.
         const { data, error } = await window.supabaseClient
-            .from('game_requests')
-            .select('*')
+            .from('game_requests_public')
+            .select('game_title, game_type, status, created_at')
             .order('created_at', { ascending: false })
             .limit(20);
         if (error || !data || data.length === 0) {
@@ -392,9 +472,8 @@ async function loadGameRequests() {
                 <div>
                     <strong>${esc(r.game_title)}</strong> ${requestStatusBadge(r.status)}
                     <div style="color:var(--text-gray); font-size:0.85rem; margin-top:4px;">
-                        طلبها ${esc(r.name)} • ${esc(r.game_type)} • ${new Date(r.created_at).toLocaleDateString('ar-EG')}
+                        ${esc(r.game_type)} • ${new Date(r.created_at).toLocaleDateString('ar-EG')}
                     </div>
-                    ${r.details ? `<div style="color:var(--text-gray); font-size:0.9rem; margin-top:4px;">${esc(r.details)}</div>` : ''}
                 </div>
             `;
             list.appendChild(item);
@@ -410,7 +489,12 @@ window.handleGameRequest = async function(e) {
     const gameTitle = document.getElementById('reqGameTitle').value.trim();
     const gameType = document.getElementById('reqGameType').value;
     const details = document.getElementById('reqDetails').value.trim();
-    if (name.length < 2 || gameTitle.length < 2) return;
+    // v6 (F-02) — نفس حدود قاعدة البيانات (CHECK constraints فـ v6)؛
+    // B10 — cplen: الطول بالنقاط، ماشي وحدات UTF-16 (إيموجي = 1 فـ Postgres).
+    if (cplen(name) < 2 || cplen(name) > 40 || cplen(gameTitle) < 2 || cplen(gameTitle) > 120 || cplen(details) > 500) {
+        alert('تحقق من الطلب: الاسم 2-40 حرف، اسم اللعبة 2-120 حرف، التفاصيل 500 حرف كحد أقصى.');
+        return;
+    }
     const form = e.target;
     const btn = form.querySelector('button[type="submit"]');
     if (btn) btn.disabled = true; // كيمنع الإرسال مرتين
@@ -436,8 +520,10 @@ function applyCurrentFilters() {
     const filtered = allMods.filter(mod => {
         // v3.9 — 'mods-only': كل المودات (أي تصنيف ما عدا ألعاب أندرويد)
         const matchCat = selectedCategory === 'all'
-            || (selectedCategory === 'mods-only' ? mod.category_id !== GAMES_CATEGORY_ID : mod.category_id === selectedCategory);
-        const hay = ((mod.title || '') + ' ' + (mod.short_desc || '') + ' ' + (mod.description || '')).toLowerCase();
+            || (selectedCategory === 'mods-only' ? mod.category_id !== gamesCategoryId() : mod.category_id === selectedCategory);
+        // v6 (F-04) — البحث فالعنوان + الوصف القصير فقط (الوصف الكامل
+        // ما كيتحملش مع القائمة، يعني ما يمكنش يتقلب فيه محلياً)
+        const hay = ((mod.title || '') + ' ' + (mod.short_desc || '')).toLowerCase();
         const matchSearch = !q || hay.includes(q);
         const matchFav = !showingFavorites || favs.includes(mod.id);
         return matchCat && matchSearch && matchFav;
@@ -448,7 +534,7 @@ function applyCurrentFilters() {
 }
 
 // v3.6 — ترقيم (pagination): نرسم 24 بطاقة فقط في البداية،
-// والباقي كيبان بزر "عرض المزيد" — هادي أكبر خطوة للسلاسة مع 221 لعبة.
+// والباقي كيبان بزر "عرض المزيد" — هادي أكبر خطوة للسلاسة مع 1323 عنصر.
 const PAGE_SIZE = 24;
 let visibleCount = PAGE_SIZE;
 let lastFilteredMods = null;
@@ -473,7 +559,7 @@ function buildModCard(mod) {
         <div class="card-img-wrapper">
             <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="card-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <span class="card-badge">${esc(catName)}</span>
-            <button class="fav-card-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${esc(mod.id)}')" title="حفظ في المفضلة">
+            <button class="fav-card-btn ${isFav ? 'active' : ''}" data-fav-id="${esc(mod.id)}" onclick="toggleFavorite(event, '${esc(mod.id)}')" title="حفظ في المفضلة">
                 <i class="fa-solid fa-heart"></i>
             </button>
         </div>
@@ -507,13 +593,19 @@ function buildRailCard(mod) {
         <div class="rail-img-wrap">
             <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
             <span class="rail-badge">${mod.is_online ? 'أونلاين' : 'أوفلاين'}</span>
-            <button class="rail-fav ${isFavorite(mod.id) ? 'active' : ''}" aria-label="المفضلة" onclick="toggleFavorite(event, '${esc(mod.id)}')"><i class="fa-solid fa-heart"></i></button>
+            <button class="rail-fav ${isFavorite(mod.id) ? 'active' : ''}" data-fav-id="${esc(mod.id)}" aria-label="المفضلة" onclick="toggleFavorite(event, '${esc(mod.id)}')"><i class="fa-solid fa-heart"></i></button>
         </div>
         <h3 class="rail-title">${esc(mod.title)}</h3>
         <div class="rail-ver">${esc(mod.game_version || '')}</div>
         <div class="rail-dl">${mod.download_count ?? 0} <i class="fa-solid fa-download"></i></div>`;
     card.addEventListener('click', () => openDetails(mod.id));
-    card.addEventListener('keydown', e => { if (e.key === 'Enter') openDetails(mod.id); });
+    // v6 (F-15) — بطاقة الصف كتفتح بـ Enter و Space
+    card.addEventListener('keydown', e => {
+        // B7 — غير البطاقة نفسها كتفتح المودال: Enter/Space اللي طالعين
+        // من زر القلب الداخلي كانو كيفتحو المودال، فمستحيل تفضّل من الصف بالكيبورد.
+        if (e.target !== card) return;
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetails(mod.id); }
+    });
     return card;
 }
 
@@ -534,9 +626,19 @@ function fillRails(container, items) {
         arrow.setAttribute('aria-label', 'التالي');
         arrow.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
         arrow.addEventListener('click', () => scroller.scrollBy({ left: -scroller.clientWidth * 0.8, behavior: 'smooth' }));
+        // v6 (F-15) — السهم كيتخبى ملي الصف يوصل للآخر (ولا ملي ما كاين حتى سكرول).
+        // التطبيع ديال scrollLeft خدام فكل المتصفحات (RTL: كروم/فايرفوكس سالب، سفاري موجب).
+        const syncArrow = () => {
+            const max = scroller.scrollWidth - scroller.clientWidth;
+            if (max <= 4) { arrow.style.display = 'none'; return; }
+            const pos = scroller.scrollLeft <= 0 ? -scroller.scrollLeft : max - scroller.scrollLeft;
+            arrow.style.display = pos >= max - 4 ? 'none' : '';
+        };
+        scroller.addEventListener('scroll', syncArrow, { passive: true });
         row.append(scroller, arrow);
         container.appendChild(row);
         scroller.scrollLeft = prev[r] || 0;
+        syncArrow();
     }
 }
 
@@ -545,14 +647,14 @@ function fillRails(container, items) {
 function renderHomeSections() {
     const gamesGrid = document.getElementById('gamesGrid');
     if (gamesGrid) {
-        const games = allMods.filter(mod => mod.category_id === GAMES_CATEGORY_ID);
+        const games = allMods.filter(mod => mod.category_id === gamesCategoryId());
         fillRails(gamesGrid, games.slice(0, GAMES_RAIL_COUNT));
         const gc = document.getElementById('gamesCount');
         if (gc) gc.textContent = `(${games.length} لعبة)`;
     }
     const modsGrid = document.getElementById('modsHomeGrid');
     if (modsGrid) {
-        const mods = allMods.filter(mod => mod.category_id !== GAMES_CATEGORY_ID);
+        const mods = allMods.filter(mod => mod.category_id !== gamesCategoryId());
         // تنويع: أحدث مود من كل تصنيف أولاً (سيارات، ملابس، شخصيات، أسلحة،
         // جرافيكس، خرائط، كليو) باش القسم يبيّن كل الأنواع، ثم كمّل بالأحدث.
         const picked = [];
@@ -576,8 +678,8 @@ function renderHomeSections() {
 // أزرار "عرض كل الألعاب / عرض كل المودات": تهبط للمكتبة مع الفلتر المناسب
 window.showAllGames = function() {
     switchView('library');
-    const btn = document.querySelector(`.filter-btn[data-category="${GAMES_CATEGORY_ID}"]`);
-    filterByCategory(GAMES_CATEGORY_ID, btn || null);
+    const btn = document.querySelector(`.filter-btn[data-category="${gamesCategoryId()}"]`);
+    filterByCategory(gamesCategoryId(), btn || null);
 };
 
 window.showAllMods = function() {
@@ -683,9 +785,38 @@ function getYouTubeEmbedUrl(url) {
 
 // 3. فتح تفاصيل اللعبة وتشغيل عداد الـ 7 ثوانٍ
 window.openDetails = async function(modId) {
-    const mod = allMods.find(m => m.id === modId);
-    if (!mod) return;
+    // v6 (F-04) — القائمة المختصرة ما فيهاش الوصف الكامل والروابط:
+    // إلا كان العنصر ناقص، جيب الصف الكامل من السيرفر قبل ما يبان المودال.
+    let mod = allMods.find(m => m.id === modId);
+    if (!mod) {
+        try {
+            const { data, error } = await window.supabaseClient.from('mods').select('*, categories(name)').eq('id', modId).single();
+            // B4 — فشل الجلب = تنبيه ورجوع، بلا ما يتحل المودال بصف ناقص
+            if (error || !data) { alert('تعذر تحميل تفاصيل اللعبة، حاول مرة أخرى.'); return; }
+            mod = data;
+        } catch (e) { alert('تعذر تحميل تفاصيل اللعبة، حاول مرة أخرى.'); return; }
+    } else if (mod.description === undefined) {
+        try {
+            const { data, error } = await window.supabaseClient.from('mods').select('*, categories(name)').eq('id', modId).single();
+            // B4 — نفس الشي هنا: بلا صف كامل، ما نفتحوش المودال بوصف خاوي/روابط undefined
+            if (error || !data) { alert('تعذر تحميل تفاصيل اللعبة، حاول مرة أخرى.'); return; }
+            Object.assign(mod, data);
+            if (mod.description === undefined) { alert('تعذر تحميل تفاصيل اللعبة، حاول مرة أخرى.'); return; }
+        } catch (e) { alert('تعذر تحميل تفاصيل اللعبة، حاول مرة أخرى.'); return; }
+    }
     activeMod = mod;
+
+    // v6 (F-15) — حفظ العنصر اللي كان فيه التركيز باش نرجعوه ملي يتسد المودال
+    lastFocusedBeforeModal = document.activeElement;
+
+    // v6 (F-13) — عنوان ووصف خاصين باللعبة (للمشاركة والـ SEO)
+    if (!originalMetaDesc) {
+        const md0 = document.querySelector('meta[name="description"]');
+        originalMetaDesc = md0 ? md0.content : '';
+    }
+    document.title = (mod.title || 'لعبة أندرويد') + ' | Gaming Omar';
+    const mdEl = document.querySelector('meta[name="description"]');
+    if (mdEl) mdEl.content = (mod.short_desc || mod.title || '').slice(0, 160);
 
     // نفرّغو تعليقات اللعبة السابقة قبل ما يبان المودال
     const prevComments = document.getElementById('commentsList');
@@ -732,7 +863,7 @@ window.openDetails = async function(modId) {
     }
 
     // Reset stars to the rating already given from this browser, if any
-    const rated = JSON.parse(localStorage.getItem('gaming_omar_rated') || '{}');
+    const rated = readStore('gaming_omar_rated', {});
     paintStars(rated[mod.id] || 0);
 
     // المواصفات
@@ -745,29 +876,31 @@ window.openDetails = async function(modId) {
     document.getElementById('modalDownloads').textContent = mod.download_count || 0;
     document.getElementById('modalDesc').textContent = mod.description || '';
 
-    // تجهيز رابط التحميل المباشر
+    // تجهيز روابط التحميل — v6 (F-16e): الـ href كيتعمر غير ملي يسالي
+    // العداد (شوف تحت)، باش الرابط ما يكونش فالـ DOM قبل الوقت.
     const primaryUrl = safeUrl(mod.download_type === 'storage' ? mod.file_url : mod.external_url);
+    pendingDownload = {
+        primary: primaryUrl,
+        drive: safeUrl(mod.link_drive),
+        mega: safeUrl(mod.link_mega)
+    };
     const directBtn = document.getElementById('modalDirectDownloadBtn');
-    if (directBtn) {
-        directBtn.href = primaryUrl || '#';
-    }
+    if (directBtn) directBtn.href = '#';
 
-    // تجهيز السيرفرات البديلة
+    // تجهيز السيرفرات البديلة (الـ href كيتعمر مع العداد حتى هو)
     const mirrorsBox = document.getElementById('mirrorsGroup');
     const driveBtn = document.getElementById('driveDownloadLink');
     const megaBtn = document.getElementById('megaDownloadLink');
     let hasMirrors = false;
 
-    if (safeUrl(mod.link_drive)) {
-        driveBtn.href = safeUrl(mod.link_drive);
+    if (pendingDownload.drive) {
         driveBtn.style.display = 'flex';
         hasMirrors = true;
     } else {
         driveBtn.style.display = 'none';
     }
 
-    if (safeUrl(mod.link_mega)) {
-        megaBtn.href = safeUrl(mod.link_mega);
+    if (pendingDownload.mega) {
         megaBtn.style.display = 'flex';
         hasMirrors = true;
     } else {
@@ -801,6 +934,12 @@ window.openDetails = async function(modId) {
             clearInterval(countdownTimer);
             timerBox.style.display = 'none';
             downloadButtonsBox.style.display = 'block';
+            // v6 (F-16e) — دابا فقط كتتعمر روابط التحميل
+            if (pendingDownload) {
+                if (directBtn) directBtn.href = pendingDownload.primary || '#';
+                if (driveBtn && pendingDownload.drive) driveBtn.href = pendingDownload.drive;
+                if (megaBtn && pendingDownload.mega) megaBtn.href = pendingDownload.mega;
+            }
         }
     }, 1000);
 
@@ -808,6 +947,9 @@ window.openDetails = async function(modId) {
     const modal = document.getElementById('modModal');
     if (modal) modal.classList.add('show');
     document.body.style.overflow = 'hidden';
+    // v6 (F-15) — التركيز كيدخل للمودال (زر الإغلاق)
+    const closeBtn = modal ? modal.querySelector('.modal-close') : null;
+    if (closeBtn) closeBtn.focus();
 
     loadComments(mod.id);
 };
@@ -819,7 +961,28 @@ window.closeModal = function() {
     document.body.style.overflow = '';
     const mediaBox = document.getElementById('modalMediaContainer');
     if (mediaBox) mediaBox.innerHTML = '';
+    // v6 (F-13/F-15) — رجّع عنوان ووصف الصفحة، ورجّع التركيز للعنصر اللي فتح المودال
+    if (originalDocTitle) document.title = originalDocTitle;
+    const mdEl = document.querySelector('meta[name="description"]');
+    if (mdEl && originalMetaDesc) mdEl.content = originalMetaDesc;
+    if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
+        lastFocusedBeforeModal.focus();
+        lastFocusedBeforeModal = null;
+    }
 };
+
+// v6 (F-15) — حبس التركيز داخل المودال: Tab كيدور غير على عناصر المودال
+document.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const modal = document.getElementById('modModal');
+    if (!modal || !modal.classList.contains('show')) return;
+    const focusables = modal.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const visible = [...focusables].filter(el => !el.disabled && el.offsetParent !== null);
+    if (!visible.length) return;
+    const first = visible[0], last = visible[visible.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
 
 window.handleBackdropClick = function(e) {
     if (e.target.id === 'modModal') closeModal();
@@ -837,9 +1000,21 @@ window.handleDownloadClick = async function(e) {
     }
 
     try {
-        const { error } = await window.supabaseClient.rpc('increment_mod_download', { target_mod_id: activeMod.id });
-        if (error) throw error;
-        activeMod.download_count = (activeMod.download_count || 0) + 1;
+        // v6 (F-01) — voter_id باش السيرفر يحسب تحميل واحد فاليوم لكل زائر ومود
+        const { error } = await window.supabaseClient.rpc('increment_mod_download', { target_mod_id: activeMod.id, voter_id: getVoterId() });
+        // B2 — العداد المحلي كيتزاد غير إلا السيرفر قبل الزيادة فعلاً.
+        // ملاحظة: الـ RPC كيرجع void والتكرار فنفس اليوم كيتجاهل بصمت
+        // (ON CONFLICT DO NOTHING فـ schema-v6)، يعني نجاح النداء بوحدو
+        // ما كيثبتش بلي تزاد — خاصنا نقراو العدد الحقيقي من السيرفر.
+        // إلا النداء رجّع خطأ (تكرار مرفوض ولا مشكل آخر)، ما كنزيدو والو.
+        if (error) { console.error("Increment error:", error); return; }
+        const { data, error: fetchError } = await window.supabaseClient.from('mods')
+            .select('download_count').eq('id', activeMod.id).single();
+        if (fetchError || !data || typeof data.download_count !== 'number') {
+            console.error("Download count re-read error:", fetchError);
+            return;
+        }
+        activeMod.download_count = data.download_count;
         const dlSpan = document.getElementById('modalDownloads');
         if (dlSpan) dlSpan.textContent = activeMod.download_count;
     } catch (err) {
@@ -881,7 +1056,7 @@ function setupInteractiveStars() {
             const val = parseInt(star.getAttribute('data-val'));
 
             if (!activeMod) return;
-            const rated = JSON.parse(localStorage.getItem('gaming_omar_rated') || '{}');
+            const rated = readStore('gaming_omar_rated', {});
             if (rated[activeMod.id]) {
                 paintStars(rated[activeMod.id]); // نبقاو نبينو التقييم القديم، ماشي النجمة اللي ضغط عليها
                 alert('قيّمت هذه اللعبة من قبل (' + rated[activeMod.id] + ' نجوم). شكراً لك!');
@@ -889,13 +1064,15 @@ function setupInteractiveStars() {
             }
             paintStars(val);
             try {
+                // v6 (F-01) — voter_id: السيرفر كيرفض التقييم الثاني من نفس الزائر
                 const { error } = await window.supabaseClient.rpc('add_mod_rating', {
                     target_mod_id: activeMod.id,
-                    user_stars: val
+                    user_stars: val,
+                    voter_id: getVoterId()
                 });
                 if (error) throw error;
                 rated[activeMod.id] = val;
-                localStorage.setItem('gaming_omar_rated', JSON.stringify(rated));
+                writeStore('gaming_omar_rated', rated);
                 const { data } = await window.supabaseClient.from('mods')
                     .select('rating_avg, rating_count').eq('id', activeMod.id).single();
                 if (data) {
@@ -905,12 +1082,25 @@ function setupInteractiveStars() {
                     document.getElementById('modalRatingVotes').textContent = data.rating_count;
                     renderModsGrid(applyCurrentFilters());
                     renderHomeSections();
+                    // B8 — التقييم كيبدّل المتوسطات، يعني ترتيب الرائج يقدر يتبدل
+                    renderTrending();
                 }
                 alert(`شكراً لك! تم تسجيل تقييمك (${val} نجوم) بنجاح.`);
             } catch (e) {
                 console.error("Rating error:", e);
-                paintStars(rated[activeMod.id] || 0); // رجّع النجوم كيف كانت
-                alert('فشل تسجيل التقييم: ' + (e.message || 'خطأ غير معروف'));
+                // v6 (F-01) — إلا السيرفر قال "مكرر" (الزائر مسح التخزين
+                // وعاود قيّم)، بين ليه بلي قيّم من قبل بدل خطأ عام.
+                // B9 — كود Postgres 23505 (unique_violation) هو الإشارة
+                // الموثوقة؛ مطابقة نص "duplicate key" كتبقى غير احتياط.
+                if (e.code === '23505' || (e.message && /duplicate key/i.test(e.message))) {
+                    rated[activeMod.id] = val;
+                    writeStore('gaming_omar_rated', rated);
+                    paintStars(val);
+                    alert('قيّمت هذه اللعبة من قبل (' + val + ' نجوم). شكراً لك!');
+                } else {
+                    paintStars(rated[activeMod.id] || 0); // رجّع النجوم كيف كانت
+                    alert('فشل تسجيل التقييم: ' + (e.message || 'خطأ غير معروف'));
+                }
             }
         });
     });
@@ -970,8 +1160,8 @@ window.handlePostComment = async function(e) {
     const author_name = authorInput ? authorInput.value.trim() : 'زائر';
     const content = textInput ? textInput.value.trim() : '';
 
-    if (author_name.length < 2 || content.length < 2) {
-        alert('اكتب اسمك وتعليقك أولاً.');
+    if (cplen(author_name) < 2 || cplen(author_name) > 40 || cplen(content) < 2 || cplen(content) > 1000) {
+        alert('اكتب اسمك (2-40 حرف) وتعليقك (2-1000 حرف) أولاً.');
         return;
     }
 
@@ -1000,12 +1190,22 @@ window.handlePostComment = async function(e) {
 window.handlePublicContact = async function(e) {
     e.preventDefault();
     const btn = e.target.querySelector('button[type="submit"]');
+    // v6 (F-02) — نفس حدود قاعدة البيانات + تحقق من شكل الإيميل
+    const cName = document.getElementById('contactName').value.trim();
+    const cEmail = document.getElementById('contactEmail').value.trim();
+    const cMsg = document.getElementById('contactMsg').value.trim();
+    if (cplen(cName) < 2 || cplen(cName) > 40 || cplen(cEmail) > 120
+        || !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(cEmail)
+        || cplen(cMsg) < 2 || cplen(cMsg) > 2000) {
+        alert('تحقق من الرسالة: الاسم 2-40 حرف، إيميل صحيح (120 حرف كحد أقصى)، الرسالة 2-2000 حرف.');
+        return;
+    }
     if (btn) btn.disabled = true;
     try {
         const { error } = await window.supabaseClient.from('contact_messages').insert([{
-            name: document.getElementById('contactName').value.trim(),
-            email: document.getElementById('contactEmail').value.trim(),
-            message: document.getElementById('contactMsg').value.trim(),
+            name: cName,
+            email: cEmail,
+            message: cMsg,
         }]);
         if (error) throw error;
         const successBox = document.getElementById('contactSuccess');

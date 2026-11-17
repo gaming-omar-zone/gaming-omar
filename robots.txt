@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Sitemap: https://gaming-omar-zone.github.io/gaming-omar/sitemap.xml

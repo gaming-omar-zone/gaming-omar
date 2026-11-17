@@ -3,6 +3,8 @@
 -- Run this whole file in Supabase > SQL Editor > New query.
 -- It is safe to run twice: every statement uses IF NOT EXISTS /
 -- ADD COLUMN IF NOT EXISTS / ON CONFLICT DO NOTHING.
+-- v6 changes (audit v5.3: F-01, F-02, F-03, F-07, F-14) live in the
+-- separate file schema-v6-migration.sql — run it after this one.
 -- What v2 fixes vs v1:
 --  * mods table now has every column app.js/admin.js use
 --    (youtube_url, is_online, ram_req, gpu_compat, link_drive,

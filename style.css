@@ -1630,6 +1630,7 @@ body { background-attachment: scroll; }
 ======================================================== */
 :root {
   --accent: #56f59b; --accent-2: #bafe5b;
+  --accent-blue: #1E68FF; --accent-blue-2: #5b9dff;
   --bg-dark: #05070a; --bg-card: #0d1215; --bg-card-hover: #121a1f; --bg-input: #0d1215;
   --primary-red: #56f59b; --primary-red-hover: #bafe5b;
   --glow: 0 0 15px rgba(86, 245, 155, 0.4);
@@ -1670,11 +1671,11 @@ body {
 .search-box input { border-radius: 999px; background: #0d1215; border: 1px solid rgba(255,255,255,.1); }
 /* عناوين الأقسام */
 .eyebrow {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 6px; color: var(--accent);
+  display: flex; align-items: center; gap: 10px; margin-bottom: 6px; color: var(--accent-blue);
   font: 600 .8rem ui-monospace, Menlo, monospace; letter-spacing: .2em;
 }
-.eyebrow::after { content: ""; width: 48px; height: 1px; background: linear-gradient(270deg, transparent, var(--accent)); }
-.show-all-btn { border-radius: 999px; color: var(--accent); background: rgba(86,245,155,.08); border: 1px solid rgba(86,245,155,.25); }
+.eyebrow::after { content: ""; width: 48px; height: 1px; background: linear-gradient(270deg, transparent, var(--accent-blue)); }
+.show-all-btn { border-radius: 999px; color: var(--accent-blue); background: rgba(30,104,255,.10); border: 1px solid rgba(30,104,255,.35); }
 /* الصفوف الأفقية */
 .rail-row { position: relative; margin-bottom: 14px; }
 .rail-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px; scroll-snap-type: x proximity; scrollbar-width: none; }
@@ -1701,7 +1702,7 @@ body {
 .rail-dl { display: flex; align-items: center; gap: 5px; margin: 4px; font-size: .75rem; color: #46ebaf; }
 .rail-arrow {
   position: absolute; left: 4px; top: 38%; z-index: 2; width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
-  background: rgba(12,20,23,.9); border: 1px solid rgba(86,245,155,.5); color: var(--accent);
+  background: rgba(12,20,23,.9); border: 1px solid rgba(30,104,255,.55); color: var(--accent-blue);
 }
 /* شريط التنقل السفلي (الهاتف فقط) */
 .bottom-nav { display: none; }
@@ -1728,7 +1729,7 @@ body {
 #gamesSection .section-title { display: flex; align-items: center; gap: 12px; font-size: clamp(1.45rem, 6vw, 2rem); font-weight: 900; }
 #gamesSection .section-title i {
   display: grid; place-items: center; flex: 0 0 52px; height: 52px; border-radius: 16px; font-size: 1.2rem;
-  color: var(--accent); background: rgba(86,245,155,.08); border: 1px solid rgba(255,255,255,.12);
+  color: var(--accent-blue); background: rgba(30,104,255,.10); border: 1px solid rgba(255,255,255,.12);
 }
 #gamesSection .show-all-btn { padding: 8px 18px; font-size: .9rem; }
 #gamesGrid .rail-scroll { gap: 10px; margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; }

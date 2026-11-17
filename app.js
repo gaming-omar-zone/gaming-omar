@@ -161,6 +161,10 @@ window.switchView = function(viewName) {
     if (targetLink) targetLink.classList.add('active');
     document.querySelectorAll('.bn-item[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
 
+    // v6.2.1 — إلا تحلات صفحة "من نحن"، عمّر الإحصائيات من البيانات
+    // اللي تحملات (إلا كان التحميل ما سالاش بعد، كتبقى "…" حتى يسالي).
+    if (viewName === 'about') fillAboutStats();
+
     if (viewName === 'games') {
         const el = document.getElementById('gamesSection');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -386,6 +390,10 @@ async function loadMods() {
         if (loading) loading.style.display = 'none';
 
         allMods = mods || [];
+        // v6.2.1 — عمّر إحصائيات "من نحن" فور ما توصل البيانات، قبل رسم
+        // البطاقات: إلا طاح رسم البطاقات/الصفوف (صف ناقص من السيرفر)،
+        // الإحصائيات كتبقى معمرة.
+        fillAboutStats();
         renderModsGrid(applyCurrentFilters());
         renderHomeSections(); // v3.9 — عمّر قسمي الألعاب والمودات في الرئيسية
         // B5 — الرائج كيتحسب من allMods، يعني خاصو يترسم من بعد كل تحميل
@@ -642,6 +650,24 @@ function fillRails(container, items) {
     }
 }
 
+// v6.2 — إحصائيات صفحة "من نحن": كتعمر من نفس البيانات (allMods).
+// v6.2.1 — دالة مستقلة: كتتنادى من loadMods (فور التحميل)، من
+// renderHomeSections، ومن switchView('about') — يعني الترتيب ولا خطأ
+// فالرسم ما يقدرش يخليها "…" إلا كانت البيانات ما تحملاتش أصلاً.
+function fillAboutStats() {
+    if (!allMods.length) return; // بلا بيانات: خلّي "…" (حالة التحميل) بدل 0
+    const aboutGames = document.getElementById('aboutGamesCount');
+    const aboutMods = document.getElementById('aboutModsCount');
+    const aboutTotal = document.getElementById('aboutTotalCount');
+    if (!aboutGames && !aboutMods && !aboutTotal) return;
+    const gid = gamesCategoryId();
+    const g = allMods.filter(mod => mod.category_id === gid);
+    const m = allMods.filter(mod => mod.category_id !== gid);
+    if (aboutGames) aboutGames.textContent = g.length;
+    if (aboutMods) aboutMods.textContent = m.length;
+    if (aboutTotal) aboutTotal.textContent = allMods.length;
+}
+
 // v3.9 — أقسام الواجهة الرئيسية: الألعاب بحدها والمودات بحدهم.
 // الألعاب: 8 ألعاب (صفّان × 4 أعمدة على الحاسوب)؛ المودات: 8 مودات. الأحدث أولاً.
 function renderHomeSections() {
@@ -674,17 +700,7 @@ function renderHomeSections() {
         if (mc) mc.textContent = `(${mods.length} مود)`;
     }
 
-    // v6.2 — إحصائيات صفحة "من نحن": كتعمر من نفس البيانات (allMods)
-    const aboutGames = document.getElementById('aboutGamesCount');
-    const aboutMods = document.getElementById('aboutModsCount');
-    const aboutTotal = document.getElementById('aboutTotalCount');
-    if (aboutGames || aboutMods || aboutTotal) {
-        const g = allMods.filter(mod => mod.category_id === gamesCategoryId());
-        const m = allMods.filter(mod => mod.category_id !== gamesCategoryId());
-        if (aboutGames) aboutGames.textContent = g.length;
-        if (aboutMods) aboutMods.textContent = m.length;
-        if (aboutTotal) aboutTotal.textContent = allMods.length;
-    }
+    fillAboutStats();
 }
 
 // أزرار "عرض كل الألعاب / عرض كل المودات": تهبط للمكتبة مع الفلتر المناسب

@@ -539,7 +539,10 @@
     <button class="bn-item" data-view="library" onclick="switchView('library')"><i class="fa-solid fa-book-open"></i><span>المكتبة</span></button>
   </nav>
 
+  <!-- v6.2.1 — ?v= كيكسر كاش المتصفح: app.js كان كيتحمل بنفس الاسم،
+       والمتصفحات اللي حملات v6.1/v6.2 قبل النشر كيبقاو خدامين بالنسخة
+       القديمة حتى يسالي max-age=600 ديال GitHub Pages -->
   <script src="supabase-client.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=6.2.1"></script>
 </body>
 </html>

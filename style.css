@@ -1276,14 +1276,14 @@ body {
 ======================================================== */
 :root {
   --neon-cyan: #00f0ff;
-  --neon-pink: #ff2d95;
+  --neon-pink: #1E68FF;
   --neon-violet: #a855f7;
   --neon-red: #bafe5b;
 }
 
 @keyframes neonPulse {
-  0%, 100% { box-shadow: 0 0 12px rgba(86, 245, 155, 0.45), 0 0 32px rgba(255, 45, 149, 0.18); }
-  50% { box-shadow: 0 0 20px rgba(86, 245, 155, 0.7), 0 0 48px rgba(255, 45, 149, 0.35); }
+  0%, 100% { box-shadow: 0 0 12px rgba(86, 245, 155, 0.45), 0 0 32px rgba(30, 104, 255, 0.18); }
+  50% { box-shadow: 0 0 20px rgba(86, 245, 155, 0.7), 0 0 48px rgba(30, 104, 255, 0.35); }
 }
 @keyframes neonBorderFlow {
   0% { background-position: 0% 50%; }
@@ -1300,7 +1300,7 @@ body {
   -webkit-text-fill-color: transparent;
   color: transparent;
   animation: neonBorderFlow 6s ease infinite;
-  filter: drop-shadow(0 0 18px rgba(255, 45, 149, 0.35));
+  filter: drop-shadow(0 0 18px rgba(30, 104, 255, 0.35));
 }
 .highlight {
   background: linear-gradient(90deg, var(--neon-red), var(--neon-pink));
@@ -1313,11 +1313,11 @@ body {
 /* الشعار والشارة بتوهج نيون */
 .logo-icon {
   color: var(--neon-pink);
-  text-shadow: 0 0 12px rgba(255, 45, 149, 0.8), 0 0 32px rgba(255, 45, 149, 0.4);
+  text-shadow: 0 0 12px rgba(30, 104, 255, 0.8), 0 0 32px rgba(30, 104, 255, 0.4);
 }
 .hero-badge {
-  border-color: rgba(255, 45, 149, 0.6);
-  box-shadow: 0 0 16px rgba(255, 45, 149, 0.3), inset 0 0 12px rgba(255, 45, 149, 0.12);
+  border-color: rgba(30, 104, 255, 0.6);
+  box-shadow: 0 0 16px rgba(30, 104, 255, 0.3), inset 0 0 12px rgba(30, 104, 255, 0.12);
   animation: neonPulse 3s ease-in-out infinite;
 }
 
@@ -1330,7 +1330,7 @@ body {
     linear-gradient(120deg, var(--neon-red), var(--neon-pink), var(--neon-violet), var(--neon-cyan), var(--neon-red)) border-box;
   background-size: 100% 100%, 300% 300%;
   animation: neonBorderFlow 8s ease infinite;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 40px rgba(255, 45, 149, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 40px rgba(30, 104, 255, 0.15);
 }
 
 /* الأزرار بتوهج نيون */
@@ -1338,7 +1338,7 @@ body {
   box-shadow: 0 0 18px rgba(86, 245, 155, 0.55), 0 8px 24px rgba(86, 245, 155, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .btn-primary:hover {
-  box-shadow: 0 0 28px rgba(255, 45, 149, 0.7), 0 8px 28px rgba(86, 245, 155, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 28px rgba(30, 104, 255, 0.7), 0 8px 28px rgba(86, 245, 155, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 .btn-download-big {
   box-shadow: 0 0 22px rgba(86, 245, 155, 0.6), 0 8px 24px rgba(86, 245, 155, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
@@ -1350,17 +1350,17 @@ body {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(0, 240, 255, 0.22);
 }
 .trending-card:hover {
-  border-color: rgba(255, 45, 149, 0.55);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(255, 45, 149, 0.25);
+  border-color: rgba(30, 104, 255, 0.55);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 24px rgba(30, 104, 255, 0.25);
 }
 .trending-rank {
-  box-shadow: 0 0 16px rgba(255, 45, 149, 0.7), 0 4px 14px rgba(86, 245, 155, 0.55);
+  box-shadow: 0 0 16px rgba(30, 104, 255, 0.7), 0 4px 14px rgba(86, 245, 155, 0.55);
 }
 
 /* التصنيفات النشطة بتدرج نيون */
 .filter-btn.active, .filter-btn:hover {
   background: linear-gradient(135deg, var(--neon-red), var(--neon-pink));
-  box-shadow: 0 0 18px rgba(255, 45, 149, 0.5);
+  box-shadow: 0 0 18px rgba(30, 104, 255, 0.5);
 }
 .nav-link:hover, .nav-link.active {
   color: #fff;
@@ -1369,7 +1369,7 @@ body {
 
 /* عناوين الأقسام بتوهج خفيف */
 .section-title {
-  text-shadow: 0 0 24px rgba(255, 45, 149, 0.25);
+  text-shadow: 0 0 24px rgba(30, 104, 255, 0.25);
 }
 .search-box input:focus {
   border-color: rgba(0, 240, 255, 0.6);
@@ -1738,3 +1738,28 @@ body {
 #gamesGrid .rail-scroll { gap: 10px; margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; }
 #gamesGrid .rail-card { flex-basis: clamp(88px, calc((100vw - 32px) / 3.7), 190px); }
 #gamesGrid .rail-arrow { left: 0; top: 42%; }
+
+/* ========================================================
+   v5.3 — إصلاحات
+   1) زر التحميل الكبير وترتيب الرائج كانو مدرّجين من الأخضر للأحمر الغامق (بقايا اللون القديم) + نص أبيض
+   2) hover ديال فلاتر التصنيفات كان نص أبيض فوق أخضر فاتح
+   3) زر المفضلة النشط كان كيبان أخضر (تدرّج الفلتر النشط كيغطي لونو الأحمر)
+   4) البطاقات الطويلة: تقصيرها فالهاتف (عمودين، بلا فراغ تحت الزر)
+======================================================== */
+.btn-download-big { background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important; color: #04110a !important; }
+.btn-download-big:hover { background: linear-gradient(135deg, var(--accent-2), var(--accent)) !important; }
+.trending-rank { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #04110a; }
+.filter-btn:hover { background: rgba(86, 245, 155, .12); color: var(--accent); border-color: rgba(86, 245, 155, .45); }
+.filter-btn.active, .filter-btn.active:hover { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #04110a; border-color: transparent; }
+.filter-btn.fav-btn.active, .filter-btn.fav-btn.active:hover { background: #e84118; border-color: #e84118; color: #fff; }
+
+.mod-card { height: auto; min-height: 0; contain-intrinsic-size: auto 300px; }
+@media (max-width: 768px) {
+  .mods-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; grid-auto-rows: auto; }
+  .mod-card .card-content { flex-grow: 0; padding: 10px; }
+  .mod-card .card-desc { flex-grow: 0; margin-bottom: 8px; }
+  .mod-card .card-title { font-size: .95rem; margin-bottom: 6px; }
+  .mod-card .card-meta { margin-bottom: 8px; padding-top: 8px; }
+  .mod-card .btn-block { padding: 8px 6px; font-size: .8rem; white-space: nowrap; }
+  .mod-card .btn-block i { display: none; }
+}

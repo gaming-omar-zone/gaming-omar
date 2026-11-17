@@ -1729,7 +1729,10 @@ body {
 #gamesSection .section-title { display: flex; align-items: center; gap: 12px; font-size: clamp(1.45rem, 6vw, 2rem); font-weight: 900; }
 #gamesSection .section-title i {
   display: grid; place-items: center; flex: 0 0 52px; height: 52px; border-radius: 16px; font-size: 1.2rem;
-  color: var(--accent-blue); background: rgba(30,104,255,.10); border: 1px solid rgba(255,255,255,.12);
+  color: var(--accent-blue); background: rgba(30,104,255,.18); border: 1px solid rgba(30,104,255,.55);
+  /* يلغي تأثير .highlight (نص شفاف + خلفية مقصوصة على الحرف) باش الأيقونة تبان زرقاء */
+  -webkit-background-clip: initial; background-clip: initial;
+  -webkit-text-fill-color: var(--accent-blue);
 }
 #gamesSection .show-all-btn { padding: 8px 18px; font-size: .9rem; }
 #gamesGrid .rail-scroll { gap: 10px; margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; }

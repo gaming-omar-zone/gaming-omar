@@ -13,8 +13,9 @@ let countdownTimer = null;
 // v3.9 — قسم الألعاب بحدو والمودات بحدهم في الواجهة الرئيسية.
 // تصنيف "ألعاب أندرويد" في قاعدة البيانات (ثابت) — كل ما عداه مود GTA SA.
 const GAMES_CATEGORY_ID = '49fbd197-c507-40a4-b1f7-f740fae5b194';
-const HOME_GAMES_COUNT = 24; // الألعاب: 3 صفوف × 8 أعمدة كتتحرك أفقياً بالسحب
-const HOME_SHOWCASE_COUNT = 8; // صفّان على الحاسوب (4 أعمدة × 2)، وأكثر على الهاتف
+const HOME_SHOWCASE_COUNT = 8; // المودات: صفّان (4 أعمدة × 2)
+const GAMES_RAIL_COUNT = 24; // الألعاب: 3 صفوف أفقية × 8 بطاقات
+const RAIL_ROWS = 3;
 
 // v2 (GitHub merge): escape DB/user text before innerHTML (XSS fix)
 function esc(s) {
@@ -89,6 +90,7 @@ window.switchView = function(viewName) {
     document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
     const targetLink = document.querySelector(`.nav-link[onclick="switchView('${viewName}')"]`);
     if (targetLink) targetLink.classList.add('active');
+    document.querySelectorAll('.bn-item[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === viewName));
 
     if (viewName === 'games') {
         const el = document.getElementById('gamesSection');
@@ -102,24 +104,13 @@ window.switchView = function(viewName) {
     } else {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    setBottomNavActive(viewName);
     const navLinks = document.getElementById('navLinks');
     if (navLinks) navLinks.classList.remove('show');
 };
 
-
-// الشريط السفلي: كيبرز التبويب النشط (الرئيسية، بحث، الألعاب، المودات، المكتبة)
-function setBottomNavActive(viewName) {
-    document.querySelectorAll('.bn-item').forEach(b => {
-        b.classList.toggle('active', b.dataset.view === viewName);
-    });
-}
-window.setBottomNavActive = setBottomNavActive;
-
 // زر البحث في القائمة العلوية: يهبط لصندوق البحث، يفتحو، ويوميض عليه
 window.goToSearch = function() {
     switchView('library');
-    setBottomNavActive('search');
     setTimeout(() => {
         const input = document.getElementById('searchInput');
         const box = document.querySelector('.search-box');
@@ -507,14 +498,55 @@ function buildModCard(mod) {
     return card;
 }
 
+// v5 — بطاقة مصغرة للصفوف الأفقية فالرئيسية (الصورة، الحالة، العنوان، الإصدار، التنزيلات)
+function buildRailCard(mod) {
+    const card = document.createElement('article');
+    card.className = 'rail-card';
+    card.tabIndex = 0;
+    card.innerHTML = `
+        <div class="rail-img-wrap">
+            <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
+            <span class="rail-badge">${mod.is_online ? 'أونلاين' : 'أوفلاين'}</span>
+            <button class="rail-fav ${isFavorite(mod.id) ? 'active' : ''}" aria-label="المفضلة" onclick="toggleFavorite(event, '${esc(mod.id)}')"><i class="fa-solid fa-heart"></i></button>
+        </div>
+        <h3 class="rail-title">${esc(mod.title)}</h3>
+        <div class="rail-ver">${esc(mod.game_version || '')}</div>
+        <div class="rail-dl">${mod.download_count ?? 0} <i class="fa-solid fa-download"></i></div>`;
+    card.addEventListener('click', () => openDetails(mod.id));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter') openDetails(mod.id); });
+    return card;
+}
+
+// كيوزّع العناصر على 3 صفوف، كل صف كيتحرك بوحدو وعندو سهم. كيحافظ على موضع السكرول عند إعادة الرسم.
+function fillRails(container, items) {
+    const prev = [...container.querySelectorAll('.rail-scroll')].map(s => s.scrollLeft);
+    container.innerHTML = '';
+    for (let r = 0; r < RAIL_ROWS; r++) {
+        const rowItems = items.filter((_, i) => i % RAIL_ROWS === r);
+        if (!rowItems.length) continue;
+        const row = document.createElement('div');
+        row.className = 'rail-row';
+        const scroller = document.createElement('div');
+        scroller.className = 'rail-scroll';
+        rowItems.forEach(m => scroller.appendChild(buildRailCard(m)));
+        const arrow = document.createElement('button');
+        arrow.className = 'rail-arrow';
+        arrow.setAttribute('aria-label', 'التالي');
+        arrow.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+        arrow.addEventListener('click', () => scroller.scrollBy({ left: -scroller.clientWidth * 0.8, behavior: 'smooth' }));
+        row.append(scroller, arrow);
+        container.appendChild(row);
+        scroller.scrollLeft = prev[r] || 0;
+    }
+}
+
 // v3.9 — أقسام الواجهة الرئيسية: الألعاب بحدها والمودات بحدهم.
 // الألعاب: 8 ألعاب (صفّان × 4 أعمدة على الحاسوب)؛ المودات: 8 مودات. الأحدث أولاً.
 function renderHomeSections() {
     const gamesGrid = document.getElementById('gamesGrid');
     if (gamesGrid) {
         const games = allMods.filter(mod => mod.category_id === GAMES_CATEGORY_ID);
-        gamesGrid.innerHTML = '';
-        games.slice(0, HOME_GAMES_COUNT).forEach(mod => gamesGrid.appendChild(buildModCard(mod)));
+        fillRails(gamesGrid, games.slice(0, GAMES_RAIL_COUNT));
         const gc = document.getElementById('gamesCount');
         if (gc) gc.textContent = `(${games.length} لعبة)`;
     }

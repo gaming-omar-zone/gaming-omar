@@ -13,7 +13,7 @@ let countdownTimer = null;
 // v3.9 — قسم الألعاب بحدو والمودات بحدهم في الواجهة الرئيسية.
 // تصنيف "ألعاب أندرويد" في قاعدة البيانات (ثابت) — كل ما عداه مود GTA SA.
 const GAMES_CATEGORY_ID = '49fbd197-c507-40a4-b1f7-f740fae5b194';
-const HOME_GAMES_COUNT = 12; // الألعاب: صف أفقي كيتمشى بالسحب
+const HOME_GAMES_COUNT = 24; // الألعاب: 3 صفوف × 8 أعمدة كتتحرك أفقياً بالسحب
 const HOME_SHOWCASE_COUNT = 8; // صفّان على الحاسوب (4 أعمدة × 2)، وأكثر على الهاتف
 
 // v2 (GitHub merge): escape DB/user text before innerHTML (XSS fix)

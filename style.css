@@ -1680,13 +1680,16 @@ body { padding-bottom: 96px; }
 /* زر التيليجرام يطلع فوق الشريط باش ما يتغطاش */
 .floating-community-btn { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
 
-/* الألعاب: صف أفقي بالسحب (بحال الرائج) — المودات كيبقاو شبكة */
+/* الألعاب: شبكة من 3 صفوف كتتحرك أفقياً بالسحب (بحال موقع المرجع) — المودات كيبقاو شبكة عادية */
 .games-row {
-  display: flex !important;
+  display: grid !important;
   grid-template-columns: none !important;
-  gap: 16px;
+  grid-template-rows: repeat(3, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: 220px;
+  gap: 14px;
   overflow-x: auto;
-  scroll-snap-type: x mandatory;
+  scroll-snap-type: x proximity;
   padding-bottom: 14px;
   -webkit-overflow-scrolling: touch;
 }
@@ -1695,11 +1698,12 @@ body { padding-bottom: 96px; }
   background: rgba(255, 255, 255, 0.2);
   border-radius: 999px;
 }
-.games-row > .mod-card {
-  flex: 0 0 250px;
-  width: 250px;
-  scroll-snap-align: start;
-}
+.games-row > .mod-card { scroll-snap-align: start; min-width: 0; }
+/* بطاقات مضغوطة فصفوف الألعاب */
+.games-row .card-img-wrapper { height: 120px; }
+.games-row .card-desc { display: none; }
+.games-row .card-title { font-size: 0.95rem; }
 @media (max-width: 768px) {
-  .games-row > .mod-card { flex-basis: 220px; width: 220px; }
+  .games-row { grid-auto-columns: 165px; gap: 10px; }
+  .games-row .card-img-wrapper { height: 100px; }
 }

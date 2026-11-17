@@ -1248,3 +1248,43 @@ window.handlePublicContact = async function(e) {
         if (btn) btn.disabled = false;
     }
 };
+
+// ===== v6.1 — نافذة "تعريف بالمطور" (مستقلة على مودال التحميل) =====
+let lastFocusedBeforeDev = null;
+
+window.openDevModal = function() {
+    const m = document.getElementById('devModal');
+    if (!m) return;
+    lastFocusedBeforeDev = document.activeElement;
+    m.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    const closeBtn = m.querySelector('.modal-close');
+    if (closeBtn) closeBtn.focus();
+};
+
+window.closeDevModal = function() {
+    const m = document.getElementById('devModal');
+    if (!m || !m.classList.contains('show')) return;
+    m.classList.remove('show');
+    document.body.style.overflow = '';
+    if (lastFocusedBeforeDev && typeof lastFocusedBeforeDev.focus === 'function') {
+        lastFocusedBeforeDev.focus();
+        lastFocusedBeforeDev = null;
+    }
+};
+
+window.handleDevBackdropClick = function(e) {
+    if (e.target.id === 'devModal') closeDevModal();
+};
+
+document.addEventListener('keydown', e => {
+    const m = document.getElementById('devModal');
+    if (!m || !m.classList.contains('show')) return;
+    if (e.key === 'Escape') { closeDevModal(); return; }
+    if (e.key !== 'Tab') return;
+    const visible = [...m.querySelectorAll('button, a[href]')].filter(el => !el.disabled && el.offsetParent !== null);
+    if (!visible.length) return;
+    const first = visible[0], last = visible[visible.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});

@@ -490,6 +490,40 @@
     </div>
   </div>
 
+  <!-- نافذة تعريف بالمطور -->
+  <div class="modal-backdrop" id="devModal" onclick="handleDevBackdropClick(event)">
+    <div class="modal-dialog dev-dialog" role="dialog" aria-modal="true" aria-labelledby="devTitle">
+      <button class="modal-close" aria-label="إغلاق" onclick="closeDevModal()">&times;</button>
+
+      <div class="dev-header">
+        <div class="dev-avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+        <h2 id="devTitle">تعريف بالمطور</h2>
+        <span class="dev-role"><i class="fa-solid fa-gamepad"></i> مؤسس ومطور موقع Gaming Omar</span>
+      </div>
+
+      <!-- عدّل هاد النص كيفما بغيتي -->
+      <p class="dev-bio">
+        أنا عمر، صاحب موقع <strong>Gaming Omar</strong>. دّيت على عاتقي نجمع ليكم أحسن ألعاب الأندرويد ومودات GTA San Andreas بروابط مباشرة، وكنتابع الموقع وكنطوّرو باش يبقى سريع وسهل الاستعمال.
+      </p>
+
+      <div class="dev-links">
+        <a href="https://t.me/gamingomar_official" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <i class="fa-brands fa-telegram" style="color:#0088cc;"></i> تيليجرام
+        </a>
+        <a href="https://youtube.com/@omargaming-gameing?si=IEUVp8zXcXEOQ54o" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <i class="fa-brands fa-youtube" style="color:#ff0000;"></i> يوتيوب
+        </a>
+        <a href="https://www.facebook.com/OmarGamingvertex" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <i class="fa-brands fa-facebook" style="color:#1877f2;"></i> فيسبوك
+        </a>
+      </div>
+
+      <button type="button" class="btn btn-primary dev-contact-btn" onclick="closeDevModal(); switchView('contact')">
+        <i class="fa-solid fa-envelope"></i> تواصل معي
+      </button>
+    </div>
+  </div>
+
   <!-- التذييل الرسمي بروابط حساباتك الحقيقية التي تفتح بنقرة واحدة -->
   <footer class="footer">
     <div class="container footer-content">
@@ -527,6 +561,9 @@
     </div>
     <div class="footer-bottom">
       <p>&copy; <span id="yearSpan"></span> Gaming Omar - جميع الحقوق محفوظة لعشاق ألعاب الأندرويد.</p>
+      <button type="button" class="dev-btn" id="devBtn" onclick="openDevModal()" aria-haspopup="dialog">
+        <i class="fa-solid fa-code"></i> تعريف بالمطور
+      </button>
     </div>
   </footer>
 
@@ -543,6 +580,6 @@
        والمتصفحات اللي حملات v6.1/v6.2 قبل النشر كيبقاو خدامين بالنسخة
        القديمة حتى يسالي max-age=600 ديال GitHub Pages -->
   <script src="supabase-client.js"></script>
-  <script src="app.js?v=6.2.1"></script>
+  <script src="app.js?v=6.3"></script>
 </body>
 </html>

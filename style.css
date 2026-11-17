@@ -1964,3 +1964,37 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* ========================================================
+   v6.1 — زر "تعريف بالمطور" فالشريط السفلي + نافذته
+======================================================== */
+.footer-bottom {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 18px;
+}
+.footer-bottom p { margin: 0; }
+.dev-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px;
+  font: 700 .82rem 'Cairo', sans-serif; color: #fff; cursor: pointer;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); border-radius: 999px;
+  transition: .25s;
+}
+.dev-btn i { color: var(--accent); }
+.dev-btn:hover, .dev-btn:focus-visible {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #04110a; border-color: transparent;
+  transform: translateY(-2px);
+}
+.dev-btn:hover i, .dev-btn:focus-visible i { color: #04110a; }
+
+.dev-dialog { max-width: 460px; text-align: center; }
+.dev-header { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 14px; }
+.dev-avatar {
+  display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; font-size: 2.2rem;
+  color: #04110a; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 0 24px rgba(0,0,0,.45);
+}
+.dev-header h2 { margin: 6px 0 0; }
+.dev-role { color: var(--text-gray); font-size: .9rem; }
+.dev-bio { color: var(--text-gray); line-height: 1.9; margin: 0 0 18px; }
+.dev-bio strong { color: #fff; }
+.dev-links { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 16px; }
+.dev-contact-btn { width: 100%; justify-content: center; }

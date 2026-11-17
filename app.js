@@ -673,6 +673,18 @@ function renderHomeSections() {
         const mc = document.getElementById('modsHomeCount');
         if (mc) mc.textContent = `(${mods.length} مود)`;
     }
+
+    // v6.2 — إحصائيات صفحة "من نحن": كتعمر من نفس البيانات (allMods)
+    const aboutGames = document.getElementById('aboutGamesCount');
+    const aboutMods = document.getElementById('aboutModsCount');
+    const aboutTotal = document.getElementById('aboutTotalCount');
+    if (aboutGames || aboutMods || aboutTotal) {
+        const g = allMods.filter(mod => mod.category_id === gamesCategoryId());
+        const m = allMods.filter(mod => mod.category_id !== gamesCategoryId());
+        if (aboutGames) aboutGames.textContent = g.length;
+        if (aboutMods) aboutMods.textContent = m.length;
+        if (aboutTotal) aboutTotal.textContent = allMods.length;
+    }
 }
 
 // أزرار "عرض كل الألعاب / عرض كل المودات": تهبط للمكتبة مع الفلتر المناسب

@@ -1773,3 +1773,194 @@ body {
   .mod-card .btn-block { padding: 8px 6px; font-size: .8rem; white-space: nowrap; }
   .mod-card .btn-block i { display: none; }
 }
+
+/* ========================================================
+   v6.2 — About Omar (صفحة "من نحن" الشخصية)
+   أُضيفت 2026-11-17 — لا تعدّل أي قاعدة فوق هاد البلوك
+   تصميم متجاوب: عمود واحد فالهاتف (360px)، شبكة فالشاشات الكبيرة
+======================================================== */
+#viewAbout .about-banner {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  margin-bottom: 22px;
+}
+#viewAbout .about-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+#viewAbout .about-avatar {
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  color: #fff;
+  background: linear-gradient(135deg, #1e68ff, #56f59b);
+  border: 3px solid var(--border-color);
+  box-shadow: 0 0 24px rgba(30, 104, 255, 0.35);
+}
+#viewAbout .about-hero-text .eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 3px;
+  color: var(--text-gray);
+  margin-bottom: 4px;
+}
+#viewAbout .about-hero-text .section-title {
+  margin-bottom: 6px;
+}
+#viewAbout .about-tagline {
+  color: var(--text-gray);
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+#viewAbout .about-bio {
+  color: var(--text-gray);
+  line-height: 1.9;
+}
+#viewAbout .about-bio p {
+  margin-bottom: 12px;
+}
+#viewAbout .about-bio strong {
+  color: #fff;
+}
+#viewAbout .about-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 22px 0;
+}
+#viewAbout .about-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 14px 6px;
+  text-align: center;
+}
+#viewAbout .about-stat-num {
+  display: block;
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: var(--accent-primary);
+  line-height: 1.2;
+}
+#viewAbout .about-stat-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  margin-top: 4px;
+}
+#viewAbout .about-h3 {
+  color: #fff;
+  font-size: 1.15rem;
+  margin: 24px 0 12px;
+}
+#viewAbout .about-cards {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+#viewAbout .about-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+#viewAbout .about-card > i {
+  font-size: 1.5rem;
+  color: var(--accent-primary);
+  margin-bottom: 8px;
+}
+#viewAbout .about-card h4 {
+  margin-bottom: 4px;
+  font-size: 1rem;
+}
+#viewAbout .about-card p {
+  color: var(--text-gray);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+#viewAbout .about-setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+#viewAbout .about-setup-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  min-width: 0;
+}
+#viewAbout .about-setup-item > i {
+  font-size: 1.3rem;
+  color: #1e68ff;
+  flex-shrink: 0;
+}
+#viewAbout .about-setup-item strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-gray);
+}
+#viewAbout .about-setup-item span {
+  display: block;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+#viewAbout .about-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+#viewAbout .about-social .btn {
+  overflow-wrap: anywhere;
+}
+#viewAbout .about-promise {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: rgba(30, 104, 255, 0.08);
+  border: 1px solid rgba(30, 104, 255, 0.35);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 24px;
+}
+#viewAbout .about-promise > i {
+  font-size: 1.4rem;
+  color: #1e68ff;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+#viewAbout .about-promise p {
+  color: var(--text-gray);
+  line-height: 1.8;
+  font-size: 0.95rem;
+}
+#viewAbout .about-promise strong {
+  color: #fff;
+}
+@media (min-width: 640px) {
+  #viewAbout .about-hero {
+    flex-direction: row;
+    text-align: start;
+  }
+  #viewAbout .about-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #viewAbout .about-setup {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

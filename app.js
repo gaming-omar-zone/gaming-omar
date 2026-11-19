@@ -409,38 +409,136 @@ async function loadMods() {
 window.reloadMods = loadMods;
 
 // الرائج: أعلى 6 ألعاب/مودات حسب عدد التحميلات.
-// v6 (F-05) — كيتحسب محلياً من allMods (بلا طلب جديد للسيرفر).
+// v6.4 (Gemini + مراجعة) — كيتحسب محلياً من allMods (بلا طلب جديد للسيرفر).
 // القسم يبقى مخفياً إلا كان هناك عناصر (قاعدة خاوية أو خطأ).
+// الترتيب: التحميلات، ثم التقييم، ثم الأحدث. منشور فقط (is_published).
+function getTrendingItems(sourceMods) {
+    const list = Array.isArray(sourceMods) ? sourceMods : [];
+
+    // Respect RLS / schema: only include published items when is_published is explicitly false
+    const published = list.filter((item) => item && item.is_published !== false);
+
+    if (!published.length) {
+        return [];
+    }
+
+    const sorted = [...published].sort((a, b) => {
+        const downloadsA = Number(a.download_count) || 0;
+        const downloadsB = Number(b.download_count) || 0;
+        if (downloadsB !== downloadsA) {
+            return downloadsB - downloadsA;
+        }
+
+        // Tie-breaker: higher rating average, then newer created_at
+        const ratingA = Number(a.rating_avg) || 0;
+        const ratingB = Number(b.rating_avg) || 0;
+        if (ratingB !== ratingA) {
+            return ratingB - ratingA;
+        }
+
+        const timeA = a.created_at ? Date.parse(a.created_at) || 0 : 0;
+        const timeB = b.created_at ? Date.parse(b.created_at) || 0 : 0;
+        return timeB - timeA;
+    });
+
+    return sorted.slice(0, 6);
+}
+
+// v6.4.1 (مراجعة AI Studio): بلا inline onclick/onerror — مستمعين DOM،
+// وكل زر تحميل عندو aria-label خاص باللعبة ديالو.
 function renderTrending() {
     const section = document.getElementById('trendingSection');
     const grid = document.getElementById('trendingGrid');
     if (!section || !grid) return;
-    const top = [...allMods]
-        .sort((a, b) => (b.download_count || 0) - (a.download_count || 0))
-        .slice(0, 6);
-    if (!top.length) return;
+
+    // بلا بيانات: القسم يبقى مخفي (نفس سلوك v6) — ما نعرضوش بطاقة وهمية.
+    if (typeof allMods === 'undefined' || !Array.isArray(allMods) || !allMods.length) {
+        section.style.display = 'none';
+        return;
+    }
+
+    const top = getTrendingItems(allMods);
+    if (!top.length) {
+        section.style.display = 'none';
+        return;
+    }
+
+    const fallbackImg = typeof PLACEHOLDER_IMG !== 'undefined' ? PLACEHOLDER_IMG : '';
+
     grid.innerHTML = '';
+
     top.forEach((mod, i) => {
         const card = document.createElement('article');
         card.className = 'trending-card';
-        card.innerHTML = `
-            <div class="trending-img-wrap">
-                <img src="${esc(mod.image_url || PLACEHOLDER_IMG)}" alt="${esc(mod.title)}" class="trending-img" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}'">
-                <span class="trending-rank">#${i + 1}</span>
-            </div>
-            <div class="trending-info">
-                <h3 class="trending-title">${esc(mod.title)}</h3>
-                <div class="trending-meta">
-                    <span><i class="fa-solid fa-star" style="color:var(--star-gold);"></i> ${Number(mod.rating_avg ?? 5).toFixed(1)} (${mod.rating_count ?? 0})</span>
-                    <span><i class="fa-solid fa-download highlight"></i> ${mod.download_count ?? 0} تنزيل</span>
-                </div>
-                <button class="btn btn-primary btn-block btn-sm" onclick="openDetails('${esc(mod.id)}')">
-                    <i class="fa-solid fa-cloud-arrow-down"></i> تحميل
-                </button>
-            </div>
-        `;
+
+        // القيم الخام (بلا هروب HTML) — textContent و addEventListener كيحميو من الحقن.
+        const rawTitle = mod.title || 'بدون عنوان';
+        const rawId = mod.id ?? `item-${i + 1}`;
+        const downloads = Math.max(0, Number(mod.download_count) || 0).toLocaleString('en-US');
+        const ratingAvg = Math.min(5, Math.max(0, Number(mod.rating_avg ?? 5))).toFixed(1);
+        const ratingCount = Math.max(0, Number(mod.rating_count) || 0);
+
+        const imgWrap = document.createElement('div');
+        imgWrap.className = 'trending-img-wrap';
+        const img = document.createElement('img');
+        img.className = 'trending-img';
+        img.src = mod.image_url || fallbackImg;
+        img.alt = rawTitle;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        let fellBack = false;
+        img.addEventListener('error', () => {
+            if (!fellBack) { fellBack = true; img.src = fallbackImg; }
+        });
+        imgWrap.appendChild(img);
+
+        const rank = document.createElement('span');
+        rank.className = 'trending-rank';
+        rank.textContent = `#${i + 1}`;
+        rank.title = `الترتيب ${i + 1}`;
+        imgWrap.appendChild(rank);
+        card.appendChild(imgWrap);
+
+        const info = document.createElement('div');
+        info.className = 'trending-info';
+
+        const titleEl = document.createElement('h3');
+        titleEl.className = 'trending-title';
+        titleEl.textContent = rawTitle;
+        titleEl.title = rawTitle;
+        info.appendChild(titleEl);
+
+        const meta = document.createElement('div');
+        meta.className = 'trending-meta';
+        const ratingSpan = document.createElement('span');
+        ratingSpan.innerHTML = '<i class="fa-solid fa-star" style="color:var(--star-gold);" aria-hidden="true"></i>';
+        ratingSpan.appendChild(document.createTextNode(` ${ratingAvg} (${ratingCount})`));
+        const downloadsSpan = document.createElement('span');
+        downloadsSpan.innerHTML = '<i class="fa-solid fa-download highlight" aria-hidden="true"></i>';
+        downloadsSpan.appendChild(document.createTextNode(` ${downloads} تنزيل`));
+        meta.appendChild(ratingSpan);
+        meta.appendChild(downloadsSpan);
+        info.appendChild(meta);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-primary btn-block btn-sm';
+        btn.setAttribute('aria-label', `تحميل ${rawTitle}`);
+        const btnIcon = document.createElement('i');
+        btnIcon.className = 'fa-solid fa-cloud-arrow-down';
+        btnIcon.setAttribute('aria-hidden', 'true');
+        btn.appendChild(btnIcon);
+        btn.appendChild(document.createTextNode(' تحميل'));
+        // القيمة الخام ديال id كتوصل لـ openDetails بلا تحويل لنص.
+        btn.addEventListener('click', () => {
+            if (typeof openDetails === 'function') openDetails(rawId);
+        });
+        info.appendChild(btn);
+
+        card.appendChild(info);
         grid.appendChild(card);
     });
+
     section.style.display = 'block';
 }
 
@@ -907,13 +1005,57 @@ window.openDetails = async function(modId) {
     // تجهيز روابط التحميل — v6 (F-16e): الـ href كيتعمر غير ملي يسالي
     // العداد (شوف تحت)، باش الرابط ما يكونش فالـ DOM قبل الوقت.
     const primaryUrl = safeUrl(mod.download_type === 'storage' ? mod.file_url : mod.external_url);
+    // v6.5 — الملفات الإضافية (APK + Data): كتجي من download_files (JSONB) —
+    // مصفوفة ولا نص JSON؛ إلا كانت خاوية/غلط، ما كيبان والو.
+    let rawExtraFiles = mod.download_files;
+    if (typeof rawExtraFiles === 'string') {
+        try {
+            rawExtraFiles = JSON.parse(rawExtraFiles);
+        } catch (_) {
+            rawExtraFiles = [];
+        }
+    }
+    const extraFilesList = Array.isArray(rawExtraFiles) ? rawExtraFiles : [];
+
     pendingDownload = {
         primary: primaryUrl,
         drive: safeUrl(mod.link_drive),
-        mega: safeUrl(mod.link_mega)
+        mega: safeUrl(mod.link_mega),
+        extras: []
     };
     const directBtn = document.getElementById('modalDirectDownloadBtn');
     if (directBtn) directBtn.href = '#';
+    const extraBox = document.getElementById('extraDownloadButtons');
+    if (extraBox) {
+        extraBox.replaceChildren();
+        extraFilesList.forEach((file) => {
+            if (!file || typeof file !== 'object') return;
+            const cleanUrl = safeUrl(file.url);
+            if (!cleanUrl) return;
+            const labelText = (typeof file.label === 'string' && file.label.trim())
+                ? file.label.trim()
+                : 'ملف إضافي';
+            const sizeText = (typeof file.size === 'string' && file.size.trim())
+                ? file.size.trim()
+                : '';
+            const btn = document.createElement('a');
+            btn.href = '#';
+            btn.target = '_blank';
+            btn.rel = 'noopener noreferrer';
+            btn.className = 'btn-download-big btn-download-extra';
+            const icon = document.createElement('i');
+            icon.className = 'fa-solid fa-file-zipper';
+            const textSpan = document.createElement('span');
+            textSpan.textContent = sizeText ? `${labelText} (${sizeText})` : labelText;
+            btn.appendChild(icon);
+            btn.appendChild(document.createTextNode(' '));
+            btn.appendChild(textSpan);
+            btn.addEventListener('click', (e) => handleDownloadClick(e));
+            extraBox.appendChild(btn);
+            pendingDownload.extras.push({ btn, url: cleanUrl });
+        });
+        extraBox.style.display = pendingDownload.extras.length > 0 ? 'block' : 'none';
+    }
 
     // تجهيز السيرفرات البديلة (الـ href كيتعمر مع العداد حتى هو)
     const mirrorsBox = document.getElementById('mirrorsGroup');
@@ -967,6 +1109,12 @@ window.openDetails = async function(modId) {
                 if (directBtn) directBtn.href = pendingDownload.primary || '#';
                 if (driveBtn && pendingDownload.drive) driveBtn.href = pendingDownload.drive;
                 if (megaBtn && pendingDownload.mega) megaBtn.href = pendingDownload.mega;
+                // v6.5 — روابط الملفات الإضافية كتتعمر هنا حتى هي (بعد العداد)
+                if (Array.isArray(pendingDownload.extras)) {
+                    pendingDownload.extras.forEach(({ btn, url }) => {
+                        btn.href = url;
+                    });
+                }
             }
         }
     }, 1000);

@@ -118,6 +118,11 @@ body {
   transform: translateY(-2px);
 }
 
+/* v6.5 — زر الملفات الإضافية (APK + Data): نفس شكل الزر الكبير، بفراغ فوقو */
+.btn-download-extra {
+  margin-top: 10px;
+}
+
 /* شاشة العداد التنازلي 7 ثوانٍ */
 .timer-box {
   background: var(--bg-input);
@@ -1185,14 +1190,17 @@ body {
 
 ::selection { background: rgba(86, 245, 155, 0.5); }
 
-/* ========================================================
-   v3.1 — قسم الرائج والأكثر تحميلاً
-   شريط أفقي قابل للتمرير (scroll-snap) ببطاقات زجاجية
-   وشارة ترتيب #1..#6. مخفي حتى يجيب بيانات.
-======================================================== */
+/* =========================================
+   قسم الرائج والأكثر تحميلاً (Trending)
+   ========================================= */
 .trending-section {
-  padding: 34px 16px 6px;
+  --trending-accent: #1E68FF;
+  --trending-accent-soft: rgba(30, 104, 255, 0.22);
+  --trending-accent-glow: rgba(30, 104, 255, 0.42);
+  padding: 34px 16px 12px;
+  overflow: visible;
 }
+
 .trending-header {
   display: flex;
   align-items: baseline;
@@ -1201,82 +1209,195 @@ body {
   flex-wrap: wrap;
   margin-bottom: 16px;
 }
+
 .trending-sub {
   color: var(--text-gray);
   font-size: 0.9rem;
 }
+
+/* Padding top/bottom gives hover lift & shadow room without clipping */
 .trending-scroll {
   display: flex;
-  gap: 16px;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 14px;
   overflow-x: auto;
+  overflow-y: visible;
+  padding: 8px 4px 16px;
   scroll-snap-type: x mandatory;
-  padding-bottom: 12px;
+  scroll-padding-inline-start: 4px;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(30, 104, 255, 0.55) transparent;
 }
-.trending-scroll::-webkit-scrollbar { height: 6px; }
-.trending-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+
+.trending-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.trending-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 999px;
 }
+
+.trending-scroll::-webkit-scrollbar-thumb {
+  background: rgba(30, 104, 255, 0.55);
+  border-radius: 999px;
+}
+
+.trending-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--trending-accent);
+}
+
+/* Base mobile-first sizing: fits 390px cleanly with ~82% width + next-card peek */
 .trending-card {
-  min-width: 250px;
-  max-width: 250px;
+  flex: 0 0 min(82vw, 310px);
+  width: min(82vw, 310px);
+  min-width: 0;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  flex-shrink: 0;
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   box-shadow: var(--glass-shadow);
-  transition: transform 0.25s, border-color 0.25s;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
-.trending-card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(255, 255, 255, 0.35);
+
+.trending-card:hover,
+.trending-card:focus-within {
+  transform: translateY(-4px);
+  border-color: var(--trending-accent);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--trending-accent-soft);
 }
+
 .trending-img-wrap {
   position: relative;
-  height: 140px;
-  background: #000;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 132px;
+  max-height: 170px;
+  background: #080b12;
+  overflow: hidden;
+  flex-shrink: 0;
 }
+
 .trending-img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
 }
+
 .trending-rank {
   position: absolute;
   top: 10px;
-  right: 10px;
-  background: linear-gradient(135deg, #56f59b, #99050d);
-  color: #fff;
-  font-weight: 900;
-  font-size: 0.95rem;
-  padding: 2px 12px;
+  inset-inline-end: 10px;
+  z-index: 2;
+  background: linear-gradient(135deg, #1E68FF, #0f46bd);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  padding: 4px 11px;
   border-radius: 999px;
-  box-shadow: 0 4px 14px rgba(86, 245, 155, 0.55);
-}
-.trending-info { padding: 14px; }
-.trending-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 4px 14px var(--trending-accent-glow);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
+
+.trending-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 12px 14px 14px;
+}
+
+.trending-title {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 0 0 8px;
+  color: var(--text-white, #ffffff);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .trending-meta {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
   color: var(--text-gray);
   font-size: 0.8rem;
   margin-bottom: 12px;
+  min-width: 0;
 }
-@media (max-width: 768px) {
-  .trending-card { min-width: 220px; max-width: 220px; }
+
+.trending-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trending-info .btn {
+  margin-top: auto;
+  width: 100%;
+}
+
+/* Tablet & Desktop */
+@media (min-width: 640px) {
+  .trending-section {
+    padding: 36px 20px 14px;
+  }
+
+  .trending-scroll {
+    gap: 16px;
+  }
+
+  .trending-card {
+    flex: 0 0 260px;
+    width: 260px;
+    max-width: 260px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .trending-card {
+    flex: 0 0 280px;
+    width: 280px;
+    max-width: 280px;
+  }
+}
+
+/* Explicit small-screen guard for 390px and narrower */
+@media (max-width: 420px) {
+  .trending-section {
+    padding: 28px 12px 10px;
+  }
+
+  .trending-scroll {
+    gap: 12px;
+    padding: 6px 2px 14px;
+  }
+
+  .trending-card {
+    flex: 0 0 calc(100vw - 56px);
+    width: calc(100vw - 56px);
+    max-width: 334px;
+  }
 }
 
 /* ========================================================
@@ -1758,7 +1879,6 @@ body {
 ======================================================== */
 .btn-download-big { background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important; color: #04110a !important; }
 .btn-download-big:hover { background: linear-gradient(135deg, var(--accent-2), var(--accent)) !important; }
-.trending-rank { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #04110a; }
 .filter-btn:hover { background: rgba(86, 245, 155, .12); color: var(--accent); border-color: rgba(86, 245, 155, .45); }
 .filter-btn.active, .filter-btn.active:hover { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #04110a; border-color: transparent; }
 .filter-btn.fav-btn.active, .filter-btn.fav-btn.active:hover { background: #e84118; border-color: #e84118; color: #fff; }

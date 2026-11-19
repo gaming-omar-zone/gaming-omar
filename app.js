@@ -15,6 +15,7 @@ let _voterId = null; // B1 — كاش معرّف الزائر: بلا هادي،
 // تصنيف "ألعاب أندرويد" كيتحل وقت التشغيل من الـ slug (شوف gamesCategoryId()).
 const HOME_SHOWCASE_COUNT = 8; // المودات: صفّان (4 أعمدة × 2)
 const GAMES_RAIL_COUNT = 24; // الألعاب: 3 صفوف أفقية × 8 بطاقات
+const NEW_GAMES_COUNT = 12; // v6.6 — قسم "ألعاب جديدة": أحدث 12 لعبة مضافة
 const RAIL_ROWS = 3;
 
 // v2 (GitHub merge): escape DB/user text before innerHTML (XSS fix)
@@ -634,7 +635,16 @@ function applyCurrentFilters() {
         const matchFav = !showingFavorites || favs.includes(mod.id);
         return matchCat && matchSearch && matchFav;
     });
-    if (selectedSort === 'downloads') filtered.sort((a, b) => (b.download_count || 0) - (a.download_count || 0));
+    // v6.6 — "الأحدث": ترتيب صريح حسب created_at تنازلياً (ماشي غير
+    // الاعتماد على ترتيب السيرفر): إلا الزائر بدّل الترتيب ورجع
+    // لـ "الأحدث"، الألعاب الجديدة خاصها ترجع لولين.
+    if (selectedSort === 'newest') filtered.sort((a, b) => {
+        const timeA = a.created_at ? Date.parse(a.created_at) || 0 : 0;
+        const timeB = b.created_at ? Date.parse(b.created_at) || 0 : 0;
+        if (timeB !== timeA) return timeB - timeA;
+        return String(b.id || '').localeCompare(String(a.id || ''));
+    });
+    else if (selectedSort === 'downloads') filtered.sort((a, b) => (b.download_count || 0) - (a.download_count || 0));
     else if (selectedSort === 'rating') filtered.sort((a, b) => (Number(b.rating_avg) || 0) - (Number(a.rating_avg) || 0));
     return filtered;
 }
@@ -769,9 +779,20 @@ function fillAboutStats() {
 // v3.9 — أقسام الواجهة الرئيسية: الألعاب بحدها والمودات بحدهم.
 // الألعاب: 8 ألعاب (صفّان × 4 أعمدة على الحاسوب)؛ المودات: 8 مودات. الأحدث أولاً.
 function renderHomeSections() {
+    const games = allMods.filter(mod => mod.category_id === gamesCategoryId());
+    // v6.6 — قسم "ألعاب جديدة": أحدث الألعاب المضافة لولين دائماً،
+    // قبل قسم الرائج — الرائج كيرتب حسب التحميلات، يعني لعبة جديدة
+    // بـ 0 تحميل ما كتبانش فيه.
+    const newGamesGrid = document.getElementById('newGamesGrid');
+    const newGamesSection = document.getElementById('newGamesSection');
+    if (newGamesGrid) {
+        fillRails(newGamesGrid, games.slice(0, NEW_GAMES_COUNT));
+        if (newGamesSection) newGamesSection.style.display = games.length ? '' : 'none';
+        const ngc = document.getElementById('newGamesCount');
+        if (ngc) ngc.textContent = games.length ? `(${Math.min(games.length, NEW_GAMES_COUNT)} لعبة)` : '';
+    }
     const gamesGrid = document.getElementById('gamesGrid');
     if (gamesGrid) {
-        const games = allMods.filter(mod => mod.category_id === gamesCategoryId());
         fillRails(gamesGrid, games.slice(0, GAMES_RAIL_COUNT));
         const gc = document.getElementById('gamesCount');
         if (gc) gc.textContent = `(${games.length} لعبة)`;

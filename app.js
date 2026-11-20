@@ -84,6 +84,15 @@ function gamesCategoryId() {
 
 // v6 (F-16e) — روابط التحميل كتتعمر غير ملي يسالي العداد (بلا ما تكون
 // فالـ DOM قبل). v6 (F-15) — آخر عنصر كان فيه التركيز قبل المودال.
+// v6.7.1 — الرجوع من المودال: حالة المتصفح (history) باش زر الرجوع
+// يسد نافذة اللعبة أولاً بدل ما يخرج من الموقع.
+// _closingFromPopstate: الإغلاق جا من popstate (ما خصوش يدير history.back()).
+// _ignoringNextPopstate: الإغلاق اليدوي دار history.back()، والـ popstate
+// اللي غادي يجي من بعدو خاصو يتجاهل (بلا ما يعاود الإغلاق).
+// _switchingModal: تبديل اللعبة من Forward بلا ما يتلاعب بالـ history.
+let _closingFromPopstate = false;
+let _ignoringNextPopstate = false;
+let _switchingModal = false;
 let pendingDownload = null;
 let lastFocusedBeforeModal = null;
 let originalDocTitle = document.title;
@@ -95,6 +104,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupMobileNav();
     updateFavoritesBadge();
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    // v6.7.1 — زر الرجوع ديال المتصفح: إلا كان المودال مفتوح، يسدو ويبقى
+    // فالصفحة؛ الضغطة الثانية كتخرج من الموقع عادي.
+    window.addEventListener('popstate', (e) => {
+        if (_ignoringNextPopstate) {
+            _ignoringNextPopstate = false;
+            return;
+        }
+        const modalEl = document.getElementById('modModal');
+        if (e.state && e.state.modal === 'game') {
+            // Forward رجّع حالة ديال لعبة: إلا كان المودال مسدود، حلو؛
+            // إلا كان مفتوح على لعبة أخرى، بدّل المحتوى ديالو.
+            if (modalEl && modalEl.classList.contains('show')) {
+                if (activeMod && activeMod.id !== e.state.id) {
+                    _switchingModal = true;
+                    try {
+                        window.closeModal();
+                    } finally {
+                        _switchingModal = false;
+                    }
+                    openDetails(e.state.id, { fromDeepLink: true });
+                }
+                // نفس اللعبة مفتوحة أصلاً — ما كاين والو نديرو
+            } else {
+                openDetails(e.state.id);
+            }
+            return;
+        }
+        if (modalEl && modalEl.classList.contains('show')) {
+            _closingFromPopstate = true;
+            try {
+                window.closeModal();
+            } finally {
+                _closingFromPopstate = false;
+            }
+        }
+    });
     if (!window.supabaseClient) {
         // v6 (F-10) — فرّق بين مكتبة Supabase ما تحملاتش (CDN) وبين خطأ اتصال عادي
         showLoadError(window.supabaseLoadError
@@ -136,7 +181,7 @@ function handleDeepLink() {
             // v6 (F-04) — openDetails كتجيب الصف الكامل من السيرفر إلا ما كانش
             // فالقائمة المختصرة، يعني الرابط العميق خدام حتى إلا ما كانش العنصر فالصفحة
             switchView('library');
-            setTimeout(() => window.openDetails(gameId), 400);
+            setTimeout(() => window.openDetails(gameId, { fromDeepLink: true }), 400);
         }
     } catch (e) { /* تجاهل أخطاء الرابط */ }
 }
@@ -987,7 +1032,7 @@ function buildGalleryStrip(shots, stripEl, onSelect, onVideoSelect) {
     });
 }
 
-window.openDetails = async function(modId) {
+window.openDetails = async function(modId, options = {}) {
     // v6 (F-04) — القائمة المختصرة ما فيهاش الوصف الكامل والروابط:
     // إلا كان العنصر ناقص، جيب الصف الكامل من السيرفر قبل ما يبان المودال.
     let mod = allMods.find(m => m.id === modId);
@@ -1249,6 +1294,30 @@ window.openDetails = async function(modId) {
     // المودال كيبان أولاً (والعداد كيبدا معاه)، والتعليقات كيتحملو من بعد
     const modal = document.getElementById('modModal');
     if (modal) modal.classList.add('show');
+    // v6.7.1 — دخّلة وحدة فالـ history لكل مودال: زر الرجوع يسد المودال
+    // أولاً. الرابط كيتزاد فيه ?game=<id> (و?search= كيبقى)، بلا ما
+    // يتبدلو روابط التحميل (كتتعمر غير ملي يسالي العداد، F-16e).
+    if (modal) {
+        if (!options.fromDeepLink) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('game', mod.id);
+            if (!history.state?.modal) {
+                history.pushState(
+                    { modal: 'game', id: mod.id, pushed: true },
+                    '',
+                    url.pathname + url.search + url.hash,
+                );
+            }
+        } else {
+            const url = new URL(window.location.href);
+            url.searchParams.set('game', mod.id);
+            history.replaceState(
+                { modal: 'game', id: mod.id, pushed: false },
+                '',
+                url.pathname + url.search + url.hash,
+            );
+        }
+    }
     document.body.style.overflow = 'hidden';
     // v6 (F-15) — التركيز كيدخل للمودال (زر الإغلاق)
     const closeBtn = modal ? modal.querySelector('.modal-close') : null;
@@ -1260,6 +1329,8 @@ window.openDetails = async function(modId) {
 window.closeModal = function() {
     if (countdownTimer) clearInterval(countdownTimer);
     const modal = document.getElementById('modModal');
+    // v6.7.1 — واش كان المودال مفتوح قبل الإغلاق (باش نزامن الـ history)
+    const wasOpen = !!(modal && modal.classList.contains('show'));
     if (modal) modal.classList.remove('show');
     document.body.style.overflow = '';
     const mediaBox = document.getElementById('modalMediaContainer');
@@ -1274,6 +1345,24 @@ window.closeModal = function() {
     if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') {
         lastFocusedBeforeModal.focus();
         lastFocusedBeforeModal = null;
+    }
+    // v6.7.1 — مزامنة الـ history مع الإغلاق اليدوي (X / الخلفية / Escape):
+    // إلا كان المودال تدفع فهاد الجلسة، رجّع خطوة وحدة فالـ history باش
+    // ما تبقاش دخّلة زايدة؛ إلا كان من رابط مباشر، حيّد ?game= بلا ما
+    // تخرج من الموقع. الإغلاق من popstate أو من تبديل اللعبة ما كيدير والو.
+    if (wasOpen && !_closingFromPopstate && !_switchingModal) {
+        if (history.state?.pushed) {
+            _ignoringNextPopstate = true;
+            history.back();
+        } else if (history.state?.modal === 'game') {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('game');
+            history.replaceState(
+                { modal: null },
+                '',
+                url.pathname + url.search + url.hash,
+            );
+        }
     }
 };
 

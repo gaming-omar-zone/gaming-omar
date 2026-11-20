@@ -931,6 +931,62 @@ function getYouTubeEmbedUrl(url) {
 }
 
 // 3. فتح تفاصيل اللعبة وتشغيل عداد الـ 7 ثوانٍ
+// v6.7 — شريط صور اللعبة: مصغرات أفقية تحت الصورة الرئيسية؛ تكليكي على
+// مصغرة كتبدّل الصورة الرئيسية (onSelect). إلا ما كايناش صور، الشريط كيبقى مخفي.
+function setActiveGalleryThumb(stripEl, activeBtn) {
+    if (!stripEl) return;
+    stripEl.querySelectorAll('.gallery-thumb').forEach((btn) => {
+        const isCurrent = btn === activeBtn;
+        btn.classList.toggle('active', isCurrent);
+        btn.setAttribute('aria-pressed', isCurrent ? 'true' : 'false');
+    });
+}
+function buildGalleryStrip(shots, stripEl, onSelect, onVideoSelect) {
+    if (!stripEl) return;
+    stripEl.replaceChildren();
+    if (!shots || !shots.length) { stripEl.style.display = 'none'; return; }
+    stripEl.style.display = '';
+    if (typeof onVideoSelect === 'function') {
+        const videoBtn = document.createElement('button');
+        videoBtn.type = 'button';
+        videoBtn.className = 'gallery-thumb gallery-thumb--video active';
+        videoBtn.setAttribute('aria-label', 'فيديو المعاينة');
+        videoBtn.setAttribute('aria-pressed', 'true');
+        videoBtn.textContent = '▶ فيديو';
+        videoBtn.addEventListener('click', () => {
+            onVideoSelect();
+            setActiveGalleryThumb(stripEl, videoBtn);
+        });
+        stripEl.appendChild(videoBtn);
+    }
+    shots.forEach((url, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isInitialActive = !onVideoSelect && idx === 0;
+        btn.className = isInitialActive ? 'gallery-thumb active' : 'gallery-thumb';
+        btn.dataset.shotUrl = url;
+        btn.setAttribute('aria-label', 'لقطة ' + (idx + 1));
+        btn.setAttribute('aria-pressed', isInitialActive ? 'true' : 'false');
+        const thumb = document.createElement('img');
+        thumb.src = url;
+        thumb.alt = 'لقطة ' + (idx + 1);
+        thumb.loading = 'lazy';
+        thumb.onerror = () => {
+            btn.remove();
+            if (!stripEl.querySelector('.gallery-thumb[data-shot-url]')) {
+                stripEl.replaceChildren();
+                stripEl.style.display = 'none';
+            }
+        };
+        btn.addEventListener('click', () => {
+            onSelect(url);
+            setActiveGalleryThumb(stripEl, btn);
+        });
+        btn.appendChild(thumb);
+        stripEl.appendChild(btn);
+    });
+}
+
 window.openDetails = async function(modId) {
     // v6 (F-04) — القائمة المختصرة ما فيهاش الوصف الكامل والروابط:
     // إلا كان العنصر ناقص، جيب الصف الكامل من السيرفر قبل ما يبان المودال.
@@ -990,23 +1046,73 @@ window.openDetails = async function(modId) {
         document.getElementById('modalModeVal').textContent = 'بدون نت';
     }
 
-    // المعاينة
+    // المعاينة — v6.7: معرض صور اللعبة (screenshots JSONB)، بحال APKVision.
+    // الصورة الرئيسية = أول سكرينشوت (أو الفيديو إلا كان)؛ الشريط تحتها كيبدّلها.
+    // إلا ما كايناش سكرينشوتات، المودال كيبان بالضبط كيفما كان (صورة الغلاف وحدة).
     const mediaBox = document.getElementById('modalMediaContainer');
-    const embedUrl = getYouTubeEmbedUrl(mod.youtube_url);
-    if (embedUrl) {
-        mediaBox.innerHTML = `
-            <div class="video-responsive">
-                <iframe src="${embedUrl}" title="فيديو المعاينة" loading="lazy" allowfullscreen></iframe>
-            </div>
-        `;
-    } else {
-        const img = document.createElement('img');
-        img.src = mod.image_url || PLACEHOLDER_IMG;
-        img.alt = mod.title || '';
-        img.className = 'modal-img';
-        img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER_IMG; };
-        mediaBox.innerHTML = '';
-        mediaBox.appendChild(img);
+    const galleryStrip = document.getElementById('modalGalleryStrip');
+    if (mediaBox) {
+        let rawShots = mod.screenshots;
+        if (typeof rawShots === 'string') {
+            try { rawShots = JSON.parse(rawShots); } catch (err) { console.warn('Invalid screenshots JSON:', err); rawShots = []; }
+        }
+        const shotsList = (Array.isArray(rawShots) ? rawShots : [])
+            .map((u) => (typeof u === 'string' ? safeUrl(u) : null))
+            .filter(Boolean)
+            .slice(0, 12);
+        const embedUrl = getYouTubeEmbedUrl(mod.youtube_url);
+        const failedUrls = new Set();
+        const showPlaceholder = () => {
+            const img = document.createElement('img');
+            img.src = safeUrl(mod.image_url) || PLACEHOLDER_IMG;
+            img.alt = mod.title || '';
+            img.className = 'modal-img';
+            img.onerror = () => { img.onerror = null; img.src = PLACEHOLDER_IMG; };
+            mediaBox.replaceChildren(img);
+        };
+        const showVideo = () => {
+            mediaBox.innerHTML = `
+                <div class="video-responsive">
+                    <iframe src="${embedUrl}" title="فيديو المعاينة" loading="lazy" allowfullscreen></iframe>
+                </div>
+            `;
+        };
+        const showShot = (url) => {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = mod.title || '';
+            img.className = 'modal-img';
+            img.onerror = () => {
+                failedUrls.add(url);
+                const brokenBtn = galleryStrip
+                    ? Array.from(galleryStrip.children).find((el) => el.dataset.shotUrl === url)
+                    : null;
+                if (brokenBtn) brokenBtn.remove();
+                const nextUrl = shotsList.find((u) => !failedUrls.has(u));
+                if (nextUrl) {
+                    const nextBtn = galleryStrip
+                        ? Array.from(galleryStrip.children).find((el) => el.dataset.shotUrl === nextUrl)
+                        : null;
+                    setActiveGalleryThumb(galleryStrip, nextBtn || null);
+                    showShot(nextUrl);
+                } else {
+                    if (galleryStrip && !galleryStrip.querySelector('.gallery-thumb[data-shot-url]')) {
+                        galleryStrip.replaceChildren();
+                        galleryStrip.style.display = 'none';
+                    }
+                    showPlaceholder();
+                }
+            };
+            mediaBox.replaceChildren(img);
+        };
+        if (embedUrl) {
+            showVideo();
+        } else if (shotsList.length) {
+            showShot(shotsList[0]);
+        } else {
+            showPlaceholder();
+        }
+        buildGalleryStrip(shotsList, galleryStrip, showShot, embedUrl ? showVideo : null);
     }
 
     // Reset stars to the rating already given from this browser, if any
@@ -1158,6 +1264,9 @@ window.closeModal = function() {
     document.body.style.overflow = '';
     const mediaBox = document.getElementById('modalMediaContainer');
     if (mediaBox) mediaBox.innerHTML = '';
+    // v6.7 — فرّغ شريط الصور حتى ما يبقاش ديال اللعبة السابقة
+    const galleryStrip = document.getElementById('modalGalleryStrip');
+    if (galleryStrip) { galleryStrip.replaceChildren(); galleryStrip.style.display = 'none'; }
     // v6 (F-13/F-15) — رجّع عنوان ووصف الصفحة، ورجّع التركيز للعنصر اللي فتح المودال
     if (originalDocTitle) document.title = originalDocTitle;
     const mdEl = document.querySelector('meta[name="description"]');

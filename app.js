@@ -8,6 +8,10 @@ let selectedCategory = 'all';
 let selectedSort = 'newest';
 let activeMod = null;
 let showingFavorites = false;
+let selectedGenre = 'all'; // v6.8 — فلتر النوع (genre slug، بحال APKVision)
+let selectedSize = 'all'; // v6.8 — فلتر الحجم: all | small | medium | large
+let selectedMode = 'all'; // v6.8 — فلتر وضع اللعب: all | online | offline
+let selectedRam = 'all'; // v6.8 — فلتر الرام: all | 2 | 3 | 4 | 6 (الحد الأقصى)
 let countdownTimer = null;
 let _voterId = null; // B1 — كاش معرّف الزائر: بلا هادي، متصفح بلا تخزين كيولّد معرّف جديد فكل نداء
 
@@ -16,6 +20,7 @@ let _voterId = null; // B1 — كاش معرّف الزائر: بلا هادي،
 const HOME_SHOWCASE_COUNT = 8; // المودات: صفّان (4 أعمدة × 2)
 const GAMES_RAIL_COUNT = 24; // الألعاب: 3 صفوف أفقية × 8 بطاقات
 const NEW_GAMES_COUNT = 12; // v6.6 — قسم "ألعاب جديدة": أحدث 12 لعبة مضافة
+const FEATURED_COUNT = 6; // v6.8 — قسم "مختارات عمر": أعلى 6 ألعاب مختارة حسب التحميلات
 const RAIL_ROWS = 3;
 
 // v2 (GitHub merge): escape DB/user text before innerHTML (XSS fix)
@@ -152,6 +157,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectedSort = sortSel.value;
         renderModsGrid(applyCurrentFilters());
     });
+    // v6.8 — فلاتر المكتبة كيتربطو هنا (قبل التحميل): إلا المتصفح رجّع
+    // قيم محفوظة فالقوائم، خاص الفلاتر تتزامن معاها من البداية.
+    setupLibraryFilters();
     // v6 (F-05) — الطلبات الكبيرة كتمشي بالتوازي بدل التتابع؛
 // الرائج كيتحسب محلياً من allMods؛ طلبات الألعاب ما كتتجبدش
     // عند البداية (switchView('requests') كتجيبها ملي كتحتاجها).
@@ -161,7 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // الاحتياطي إلا التصنيفات ما وصلوش بعد. B5 — renderTrending() تحيدات
     // من هنا: دابا كتتنادى فآخر loadMods (شوف تحت).
     // v6.1 (Claude round 2) — إلا فشل التحميل، ما ترسمش "لا نتائج" تحت صندوق الخطأ
-    if (allMods.length) { renderHomeSections(); renderModsGrid(applyCurrentFilters()); }
+    if (allMods.length) { renderHomeSections(); renderFeatured(); renderGenreChips(); renderModsGrid(applyCurrentFilters()); }
     setupSearch();
     setupInteractiveStars();
     handleDeepLink();
@@ -299,8 +307,12 @@ window.toggleFavoritesFilter = function() {
     const favBtn = document.getElementById('favFilterBtn');
     if (showingFavorites) {
         selectedCategory = 'all'; // وإلا كتبقى المفضلة محصورة فآخر تصنيف تختار
+        selectedGenre = 'all'; // v6.8 — المفضلة فيها مودات بلا نوع، فلتر النوع خاصو يتصفّر
         if (favBtn) favBtn.classList.add('active');
-        document.querySelectorAll('.filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#categoriesBar .filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#genreBar .filter-btn').forEach(b => b.classList.remove('active'));
+        const allGenreBtn = document.querySelector('#genreBar .filter-btn');
+        if (allGenreBtn) allGenreBtn.classList.add('active');
     } else {
         if (favBtn) favBtn.classList.remove('active');
         const allBtn = document.querySelector('.filter-btn[data-category="all"]');
@@ -312,9 +324,13 @@ window.toggleFavoritesFilter = function() {
 window.showFavoritesOnly = function() {
     showingFavorites = true;
     selectedCategory = 'all';
+    selectedGenre = 'all'; // v6.8 — بحال toggleFavoritesFilter: المفضلة فيها مودات بلا نوع
     const favBtn = document.getElementById('favFilterBtn');
     if (favBtn) favBtn.classList.add('active');
-    document.querySelectorAll('.filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#categoriesBar .filter-btn:not(#favFilterBtn)').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#genreBar .filter-btn').forEach(b => b.classList.remove('active'));
+    const allGenreBtn = document.querySelector('#genreBar .filter-btn');
+    if (allGenreBtn) allGenreBtn.classList.add('active');
     renderModsGrid(applyCurrentFilters());
     const modsSection = document.getElementById('mods');
     if (modsSection) modsSection.scrollIntoView({ behavior: 'smooth' });
@@ -414,7 +430,7 @@ async function loadMods() {
         // Without paging, the oldest items never reach the page.
         // v6 (F-04) — القائمة كتجيب غير الأعمدة اللي كتبان فالبطاقات؛
         // الوصف الكامل والروابط والمواصفات كتتجبد فـ openDetails للعنصر الواحد.
-        const LIST_COLUMNS = 'id, title, image_url, short_desc, category_id, file_size, game_version, is_online, download_count, rating_avg, rating_count, created_at, categories(name)';
+        const LIST_COLUMNS = 'id, title, image_url, short_desc, category_id, file_size, game_version, is_online, download_count, rating_avg, rating_count, created_at, ram_req, genre, is_featured, categories(name)';
         let all = [];
         let from = 0;
         const PAGE = 1000;
@@ -446,6 +462,9 @@ async function loadMods() {
         // ناجح (ماشي غير عند البداية): إلا فشل أول تحميل والزائر ضغط
         // "إعادة المحاولة" (window.reloadMods)، الرائج ما كانش كيبان.
         renderTrending();
+        // v6.8 — المختارات + أزرار النوع كيترسمو من نفس البيانات المحملة
+        renderFeatured();
+        renderGenreChips();
     } catch (err) {
         if (loading) loading.style.display = 'none';
         console.error("Error loading mods:", err);
@@ -588,6 +607,32 @@ function renderTrending() {
     section.style.display = 'block';
 }
 
+// v6.8 — قسم "مختارات عمر": ألعاب is_featured=true، مرتبة حسب التحميلات.
+// القسم يبقى مخفياً إلا كان هناك ألعاب مختارة (نفس سلوك الرائج).
+function renderFeatured() {
+    const section = document.getElementById('featuredSection');
+    const grid = document.getElementById('featuredGrid');
+    if (!section || !grid) return;
+    if (typeof allMods === 'undefined' || !Array.isArray(allMods) || !allMods.length) {
+        section.style.display = 'none';
+        return;
+    }
+    const featured = allMods
+        .filter(mod => mod && mod.is_featured === true && mod.category_id === gamesCategoryId())
+        .sort((a, b) => (Number(b.download_count) || 0) - (Number(a.download_count) || 0))
+        .slice(0, FEATURED_COUNT);
+    if (!featured.length) {
+        section.style.display = 'none';
+        return;
+    }
+    // v6.8 — نظهر القسم أولاً: fillRails كيحسب الأسهم من scrollWidth،
+    // ويلا القسم مخفي (display: none) كيرجع 0 وكتختفي الأسهم فالهاتف.
+    section.style.display = '';
+    fillRails(grid, featured);
+    const fc = document.getElementById('featuredCount');
+    if (fc) fc.textContent = `(${featured.length} لعبة)`;
+}
+
 // طلبات الألعاب: لائحة عامة + فورم الإرسال
 const REQUEST_STATUS_LABELS = {
     pending: ['قيد الانتظار', 'badge-draft'],
@@ -664,6 +709,41 @@ window.handleGameRequest = async function(e) {
     }
 };
 
+// v6.8 — أسماء الأنواع بالعربية (النوع مخزّن slug إنجليزي فالقاعدة، بحال APKVision)
+const GENRE_LABELS = {
+    action: 'أكشن', adventure: 'مغامرات', arcade: 'أركيد', board: 'لوحية',
+    card: 'ورق', casual: 'عادية', puzzle: 'ألغاز', racing: 'سباق',
+    'role-playing': 'تقمص أدوار', simulation: 'محاكاة', sports: 'رياضة', strategy: 'استراتيجية'
+};
+function genreLabel(slug) {
+    return GENRE_LABELS[slug] || slug || 'بدون نوع';
+}
+// v6.8 — الحجم الكلي للتحميل بالميغا: كيجمع كل الأرقام فـ file_size
+// ("49.55 MB APK + 5.84 GB OBB" = 49.55 + 5.84×1024). إلا ما كانش رقم، null.
+function totalSizeMB(mod) {
+    const s = String(mod && mod.file_size ? mod.file_size : '');
+    const re = /(\d+(?:\.\d+)?)\s*(GB|MB)/gi;
+    let m, total = 0, found = false;
+    while ((m = re.exec(s)) !== null) {
+        found = true;
+        total += parseFloat(m[1]) * (m[2].toUpperCase() === 'GB' ? 1024 : 1);
+    }
+    return found ? total : null;
+}
+// v6.8 — الرام المطلوبة بالجيغا: أول رقم فـ ram_req ("6-8 GB" = 6). إلا ما كانش رقم، null.
+function ramGB(mod) {
+    const s = String(mod && mod.ram_req ? mod.ram_req : '');
+    const m = /(\d+(?:\.\d+)?)/.exec(s);
+    if (!m) return null;
+    const v = parseFloat(m[1]);
+    // "512 MB" ماشي 512 GB — نحوّل للجيغا (كيتشاف حتى بلا فراغ: "512MB").
+    return /MB/i.test(s) ? v / 1024 : v;
+}
+// v6.8 — واش الرابط بصيغة XAPK/APKS (خاصو مثبّت خاص)؟ كيتشاف من امتداد الملف.
+function isXapkUrl(u) {
+    return /(\.xapk|\.apks)(\?|#|$)/i.test(String(u || ''));
+}
+
 function applyCurrentFilters() {
     const searchInput = document.getElementById('searchInput');
     const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -678,7 +758,18 @@ function applyCurrentFilters() {
         const hay = ((mod.title || '') + ' ' + (mod.short_desc || '')).toLowerCase();
         const matchSearch = !q || hay.includes(q);
         const matchFav = !showingFavorites || favs.includes(mod.id);
-        return matchCat && matchSearch && matchFav;
+        // v6.8 — فلاتر المكتبة: النوع + وضع اللعب + الحجم + الرام
+        const matchGenre = selectedGenre === 'all' || (mod.genre || '') === selectedGenre;
+        const matchMode = selectedMode === 'all'
+            || (selectedMode === 'online' ? mod.is_online === true : mod.is_online === false);
+        const sizeMB = totalSizeMB(mod);
+        let matchSize = true;
+        if (selectedSize === 'small') matchSize = sizeMB !== null && sizeMB < 500;
+        else if (selectedSize === 'medium') matchSize = sizeMB !== null && sizeMB >= 500 && sizeMB <= 2048;
+        else if (selectedSize === 'large') matchSize = sizeMB !== null && sizeMB > 2048;
+        const ram = ramGB(mod);
+        const matchRam = selectedRam === 'all' || (ram !== null && ram <= Number(selectedRam));
+        return matchCat && matchSearch && matchFav && matchGenre && matchMode && matchSize && matchRam;
     });
     // v6.6 — "الأحدث": ترتيب صريح حسب created_at تنازلياً (ماشي غير
     // الاعتماد على ترتيب السيرفر): إلا الزائر بدّل الترتيب ورجع
@@ -920,12 +1011,91 @@ function renderModsGrid(mods) {
 window.filterByCategory = function(catId, btnElement) {
     selectedCategory = catId;
     showingFavorites = false;
+    // v6.8 — فلتر النوع كيطبق غير على الألعاب: إلا التصنيف ماشي
+    // "ألعاب أندرويد" (أو كلشي)، نصفّرو باش ما يرجعش 0 نتيجة.
+    if (catId === 'mods-only' || (catId !== 'all' && catId !== gamesCategoryId())) selectedGenre = 'all';
     const favBtn = document.getElementById('favFilterBtn');
     if (favBtn) favBtn.classList.remove('active');
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    // v6.8 — نصفّر غير أزرار التصنيفات (#categoriesBar): أزرار النوع
+    // (#genreBar) ما كيتمسوش، إلا إلا تصفّر النوع فديك الساعة نرجّع "كل الأنواع".
+    document.querySelectorAll('#categoriesBar .filter-btn').forEach(b => b.classList.remove('active'));
+    if (selectedGenre === 'all') {
+        document.querySelectorAll('#genreBar .filter-btn').forEach(b => b.classList.remove('active'));
+        const allGenreBtn = document.querySelector('#genreBar .filter-btn');
+        if (allGenreBtn) allGenreBtn.classList.add('active');
+    }
     if (btnElement) btnElement.classList.add('active');
     renderModsGrid(applyCurrentFilters());
 };
+
+// v6.8 — أزرار النوع: كتبنى من الأنواع اللي كاينة فعلاً فالبيانات المحملة
+// (إلا ما كانش حتى نوع معمّر فالقاعدة، الصف كيبقى مخفي).
+function renderGenreChips() {
+    const bar = document.getElementById('genreBar');
+    if (!bar) return;
+    const counts = {};
+    allMods.forEach(mod => {
+        if (mod && mod.genre && mod.category_id === gamesCategoryId()) {
+            counts[mod.genre] = (counts[mod.genre] || 0) + 1;
+        }
+    });
+    const genres = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+    bar.replaceChildren();
+    if (!genres.length) { bar.style.display = 'none'; return; }
+    bar.style.display = '';
+    const allBtn = document.createElement('button');
+    allBtn.type = 'button';
+    allBtn.className = 'filter-btn' + (selectedGenre === 'all' ? ' active' : '');
+    allBtn.textContent = 'كل الأنواع';
+    allBtn.addEventListener('click', () => setGenreFilter('all', allBtn));
+    bar.appendChild(allBtn);
+    genres.forEach(slug => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'filter-btn' + (selectedGenre === slug ? ' active' : '');
+        btn.setAttribute('data-genre', slug);
+        btn.textContent = genreLabel(slug) + ' (' + counts[slug] + ')';
+        btn.addEventListener('click', () => setGenreFilter(slug, btn));
+        bar.appendChild(btn);
+    });
+}
+
+window.setGenreFilter = function(genre, btnElement) {
+    selectedGenre = genre;
+    document.querySelectorAll('#genreBar .filter-btn').forEach(b => b.classList.remove('active'));
+    if (btnElement) btnElement.classList.add('active');
+    renderModsGrid(applyCurrentFilters());
+};
+
+// v6.8 — ربط قوائم فلاتر المكتبة (الحجم / وضع اللعب / الرام) بإعادة الرسم.
+// كنقرا القيمة الأولية ديال كل قائمة ملي كنربطوها: المتصفح يقدر يرجّع
+// قيمة محفوظة (back/forward) بلا ما يطلق 'change'، والفلتر خاصو يتبعها.
+function setupLibraryFilters() {
+    const sizeSel = document.getElementById('sizeSelect');
+    if (sizeSel) {
+        selectedSize = sizeSel.value || 'all';
+        sizeSel.addEventListener('change', () => {
+            selectedSize = sizeSel.value;
+            renderModsGrid(applyCurrentFilters());
+        });
+    }
+    const modeSel = document.getElementById('modeSelect');
+    if (modeSel) {
+        selectedMode = modeSel.value || 'all';
+        modeSel.addEventListener('change', () => {
+            selectedMode = modeSel.value;
+            renderModsGrid(applyCurrentFilters());
+        });
+    }
+    const ramSel = document.getElementById('ramSelect');
+    if (ramSel) {
+        selectedRam = ramSel.value || 'all';
+        ramSel.addEventListener('change', () => {
+            selectedRam = ramSel.value;
+            renderModsGrid(applyCurrentFilters());
+        });
+    }
+}
 
 function setupSearch() {
     const input = document.getElementById('searchInput');
@@ -1227,6 +1397,13 @@ window.openDetails = async function(modId, options = {}) {
             pendingDownload.extras.push({ btn, url: cleanUrl });
         });
         extraBox.style.display = pendingDownload.extras.length > 0 ? 'block' : 'none';
+    }
+
+    // v6.8 — تحذير XAPK/APKS: الملف كيحتاج مثبّت خاص (SAI / APKMirror Installer)
+    const xapkWarn = document.getElementById('xapkWarning');
+    if (xapkWarn) {
+        const allDlUrls = [pendingDownload.primary, ...pendingDownload.extras.map(e => e.url)];
+        xapkWarn.style.display = allDlUrls.some(isXapkUrl) ? 'block' : 'none';
     }
 
     // تجهيز السيرفرات البديلة (الـ href كيتعمر مع العداد حتى هو)

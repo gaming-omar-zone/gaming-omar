@@ -449,6 +449,27 @@ button.logo {
   border-color: #e84118;
 }
 
+/* v6.8 — فلاتر المكتبة (النوع + الحجم + وضع اللعب + الرام) */
+.library-filters { margin-bottom: 18px; }
+.genre-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+.genre-filter .filter-btn { padding: 6px 14px; font-size: 0.9rem; }
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  color: var(--text-gray);
+  font-size: 0.9rem;
+}
+.filter-row label { display: inline-flex; align-items: center; gap: 6px; }
+
 /* بطاقات المودات والألعاب */
 .mods-grid {
   display: grid;
@@ -916,6 +937,13 @@ button.logo {
     padding-bottom: 8px;
     flex-wrap: nowrap;
   }
+  /* v6.8 — أزرار النوع كتتمد أفقياً بحال التصنيفات، بلا ما تتكدس فصفوف */
+  .genre-filter {
+    overflow-x: auto;
+    justify-content: flex-start;
+    padding-bottom: 8px;
+    flex-wrap: nowrap;
+  }
   .filter-btn {
     white-space: nowrap;
     flex-shrink: 0;
@@ -1200,6 +1228,18 @@ body {
 }
 .alert-danger { color: #ff8a8a; }
 .alert-success { color: #7bed9f; }
+
+/* v6.8 — تحذير XAPK/APKS فالمودال */
+.xapk-warning {
+  background: rgba(255, 193, 7, 0.14);
+  border: 1px solid rgba(255, 193, 7, 0.55);
+  color: #ffd54f;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
 
 /* التذييل والأيقونات */
 .footer {

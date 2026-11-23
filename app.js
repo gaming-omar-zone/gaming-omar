@@ -1,5 +1,5 @@
 // ========================================================
-// Gaming Omar - Public Site Logic (عداد الثواني وروابط التحميل)
+// Gaming Omar - Public Site Logic (روابط التحميل)
 // ========================================================
 
 let allMods = [];
@@ -12,7 +12,6 @@ let selectedGenre = 'all'; // v6.8 — فلتر النوع (genre slug، بحا�
 let selectedSize = 'all'; // v6.8 — فلتر الحجم: all | small | medium | large
 let selectedMode = 'all'; // v6.8 — فلتر وضع اللعب: all | online | offline
 let selectedRam = 'all'; // v6.8 — فلتر الرام: all | 2 | 3 | 4 | 6 (الحد الأقصى)
-let countdownTimer = null;
 let _voterId = null; // B1 — كاش معرّف الزائر: بلا هادي، متصفح بلا تخزين كيولّد معرّف جديد فكل نداء
 
 // v3.9 — قسم الألعاب بحدو والمودات بحدهم في الواجهة الرئيسية.
@@ -1382,8 +1381,7 @@ window.openDetails = async function(modId, options = {}) {
                 : '';
             const btn = document.createElement('a');
             btn.href = '#';
-            btn.target = '_blank';
-            btn.rel = 'noopener noreferrer';
+            btn.rel = 'noreferrer'; // v6.9 — تحميل فنفس الصفحة، بلا Referer للسيرفر
             btn.className = 'btn-download-big btn-download-extra';
             const icon = document.createElement('i');
             icon.className = 'fa-solid fa-file-zipper';
@@ -1431,49 +1429,30 @@ window.openDetails = async function(modId, options = {}) {
     }
 
     // ==========================================
-    // تشغيل العداد التنازلي التلقائي (7 ثوانٍ)
+    // v6.9 — بلا عداد: أزرار التحميل كتبان نيشان والروابط كتتعمر دابا
+    // (عمر: تضغط على تحميل ويبدا التنزيل فنفس الصفحة)
     // ==========================================
-    const timerBox = document.getElementById('timerBox');
     const downloadButtonsBox = document.getElementById('downloadButtonsBox');
-    const timerCount = document.getElementById('timerCount');
-
-    if (countdownTimer) clearInterval(countdownTimer);
-
-    timerBox.style.display = 'block';
-    downloadButtonsBox.style.display = 'none';
-
-    let seconds = 7;
-    timerCount.textContent = seconds;
-
-    countdownTimer = setInterval(() => {
-        seconds--;
-        timerCount.textContent = seconds;
-
-        if (seconds <= 0) {
-            clearInterval(countdownTimer);
-            timerBox.style.display = 'none';
-            downloadButtonsBox.style.display = 'block';
-            // v6 (F-16e) — دابا فقط كتتعمر روابط التحميل
-            if (pendingDownload) {
-                if (directBtn) directBtn.href = pendingDownload.primary || '#';
-                if (driveBtn && pendingDownload.drive) driveBtn.href = pendingDownload.drive;
-                if (megaBtn && pendingDownload.mega) megaBtn.href = pendingDownload.mega;
-                // v6.5 — روابط الملفات الإضافية كتتعمر هنا حتى هي (بعد العداد)
-                if (Array.isArray(pendingDownload.extras)) {
-                    pendingDownload.extras.forEach(({ btn, url }) => {
-                        btn.href = url;
-                    });
-                }
-            }
+    downloadButtonsBox.style.display = 'block';
+    // روابط التحميل كتتعمر دابا (بلا انتظار)
+    if (pendingDownload) {
+        if (directBtn) directBtn.href = pendingDownload.primary || '#';
+        if (driveBtn && pendingDownload.drive) driveBtn.href = pendingDownload.drive;
+        if (megaBtn && pendingDownload.mega) megaBtn.href = pendingDownload.mega;
+        // v6.5 — روابط الملفات الإضافية كتتعمر هنا حتى هي
+        if (Array.isArray(pendingDownload.extras)) {
+            pendingDownload.extras.forEach(({ btn, url }) => {
+                btn.href = url;
+            });
         }
-    }, 1000);
+    }
 
-    // المودال كيبان أولاً (والعداد كيبدا معاه)، والتعليقات كيتحملو من بعد
+    // المودال كيبان أولاً (والأزرار كتبان معاه)، والتعليقات كيتحملو من بعد
     const modal = document.getElementById('modModal');
     if (modal) modal.classList.add('show');
     // v6.7.1 — دخّلة وحدة فالـ history لكل مودال: زر الرجوع يسد المودال
     // أولاً. الرابط كيتزاد فيه ?game=<id> (و?search= كيبقى)، بلا ما
-    // يتبدلو روابط التحميل (كتتعمر غير ملي يسالي العداد، F-16e).
+    // يتبدلو روابط التحميل (كتتعمر نيشان، v6.9 — بلا عداد).
     if (modal) {
         if (!options.fromDeepLink) {
             const url = new URL(window.location.href);
@@ -1504,7 +1483,6 @@ window.openDetails = async function(modId, options = {}) {
 };
 
 window.closeModal = function() {
-    if (countdownTimer) clearInterval(countdownTimer);
     const modal = document.getElementById('modModal');
     // v6.7.1 — واش كان المودال مفتوح قبل الإغلاق (باش نزامن الـ history)
     const wasOpen = !!(modal && modal.classList.contains('show'));

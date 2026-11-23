@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
-  <link rel="stylesheet" href="style.css?v=6.8">
+  <link rel="stylesheet" href="style.css?v=6.9">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
 </head>
@@ -501,19 +501,11 @@
           <p id="modalDesc" style="color: var(--text-gray); white-space: pre-line;"></p>
         </div>
 
-        <!-- شاشة العداد التنازلي 7 ثوانٍ -->
-        <div class="timer-box" id="timerBox">
-          <i class="fa-solid fa-hourglass-half fa-spin highlight" style="font-size: 1.8rem;"></i>
-          <p style="margin: 8px 0 4px; font-weight: 600;">جاري تجهيز وفحص رابط التحميل الآمن...</p>
-          <div class="timer-countdown" id="timerCount">7</div>
-          <small style="color: var(--text-gray);">يرجى الانتظار ثوانٍ معدودة لتحميل الملف</small>
-        </div>
-
-        <!-- منطقة ظهور أزرار التحميل بعد انتهاء العداد -->
-        <div id="downloadButtonsBox" style="display: none;">
+        <!-- v6.9 — أزرار التحميل كتبان نيشان (بلا عداد) -->
+        <div id="downloadButtonsBox">
           <!-- v6.8 — تحذير XAPK/APKS: كيبان غير للألعاب بصيغة xapk/apks -->
           <div id="xapkWarning" class="xapk-warning" style="display: none;">⚠️ هاد اللعبة بصيغة XAPK / APKS — خاصك تطبيق XAPK Installer (مثلا SAI ولا APKMirror Installer) باش تثبتها، حيت التثبيت العادي ما غاديش يخدم.</div>
-          <a href="#" id="modalDirectDownloadBtn" target="_blank" rel="noopener noreferrer" class="btn-download-big" onclick="handleDownloadClick(event)">
+          <a href="#" id="modalDirectDownloadBtn" rel="noreferrer" class="btn-download-big" onclick="handleDownloadClick(event)">
             <i class="fa-solid fa-cloud-arrow-down"></i> اضغط هنا لتحميل اللعبة الآن
           </a>
 
@@ -646,6 +638,6 @@
        والمتصفحات اللي حملات v6.1/v6.2 قبل النشر كيبقاو خدامين بالنسخة
        القديمة حتى يسالي max-age=600 ديال GitHub Pages -->
   <script src="supabase-client.js"></script>
-  <script src="app.js?v=6.8"></script>
+  <script src="app.js?v=6.9"></script>
 </body>
 </html>

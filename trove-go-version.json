@@ -1,0 +1,15 @@
+{
+  "version_name": "2.5.0",
+  "version_code": 17,
+  "apk_url": "https://github.com/gaming-omar-zone/gaming-omar/releases/download/trove-go-v2.5.0/TroveGO-v2.5.0.apk",
+  "apk_size_bytes": 88210396,
+  "changelog_en": [
+    "In-app updater: Trove GO now checks for new versions when it opens and lets you download the update from inside the app",
+    "Check for updates anytime from your profile"
+  ],
+  "changelog_ar": [
+    "محدّث داخل التطبيق: Trove GO دبا كيتحقق من النسخ الجديدة ملي كيتحل وكيخليك تحمّل التحديث من داخل التطبيق",
+    "تحقق من التحديثات في أي وقت من صفحتك"
+  ],
+  "force_update": false
+}
